@@ -426,6 +426,20 @@ SUBROUTINE READ_INPUT
 # endif
       ENDIF
 
+      CALL GET_LOGICAL_VAL(MOMENTUM_EXCHANGE,FILE_NAME,'MOMENTUM_EXCHANGE',line,ierr)
+      IF(ierr==1)THEN
+        MOMENTUM_EXCHANGE = .FALSE.
+# if defined (PARALLEL)
+      if (myid.eq.0) THEN
+         WRITE(*,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
+         WRITE(3,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
+      endif
+# else
+         WRITE(*,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
+         WRITE(3,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
+# endif
+      ENDIF
+
      IF(SUBGRID_CD_FIXED)THEN
       CALL GET_Float_VAL(Cd_fixed,FILE_NAME,'Cd_fixed',line,ierr)
       IF(ierr==1)THEN
@@ -448,6 +462,22 @@ SUBROUTINE READ_INPUT
 # endif
 
      ELSE
+     CALL GET_STRING_VAL(MANNING_TYPE,FILE_NAME,'MANNING_TYPE',line,ierr)
+!     MANNING_TYPE: UNIFORM/VARY/SUBGRID
+     IF(ierr==1)THEN
+      MANNING_TYPE = 'UNIFORM'
+# if defined (PARALLEL)
+      if (myid.eq.0) THEN
+         WRITE(*,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
+         WRITE(3,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
+      endif
+# else
+         WRITE(*,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
+         WRITE(3,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
+# endif
+     ENDIF
+
+     IF(MANNING_TYPE(1:4)=='UNIF')THEN
       CALL GET_Float_VAL(Manning,FILE_NAME,'Manning',line,ierr)
       IF(ierr==1)THEN
         Manning = 0.01
@@ -461,27 +491,7 @@ SUBROUTINE READ_INPUT
          WRITE(3,'(A40,A40)')'Manning: Use default,', '0.01'
 # endif
       ENDIF
-
-# if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A13,F12.6)')'Manning    =', Manning
-# else
-      WRITE(3,'(A13,F12.6)')'Manning    =', Manning
-# endif
-
-      CALL GET_STRING_VAL(MANNING_TYPE,FILE_NAME,'MANNING_TYPE',line,ierr)
-!     MANNING_TYPE: UNIFORM/VARY/SUBGRID
-      IF(ierr==1)THEN
-        MANNING_TYPE = 'UNIFORM'
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-         WRITE(3,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-         WRITE(3,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-# endif
-      ENDIF
+     ENDIF ! uniform manning
 
      IF(MANNING_TYPE(1:4)=='VARY')THEN
       CALL GET_STRING_VAL(MANNING_FILE,FILE_NAME,'MANNING_FILE',line,ierr)
@@ -526,16 +536,6 @@ SUBROUTINE READ_INPUT
 # else
       WRITE(3,'(A13,F12.6)')'Cd_fixed   =', Cd_fixed
       WRITE(3,'(A13,F12.6)')'Manning    =', Manning
-      WRITE(3,'(A15,A50)')'MANNING_TYPE:', MANNING_TYPE
-      WRITE(3,'(A15,A50)')'MANNING_FILE:', MANNING_FILE
-      WRITE(3,'(A20,A50)')'MANNINGSUBGRID_FILE:', MANNINGSUBGRID_FILE
-# endif
-
-# if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A15,A50)')'MANNING_TYPE:', MANNING_TYPE
-      if (myid.eq.0) WRITE(3,'(A15,A50)')'MANNING_FILE:', MANNING_FILE
-      if (myid.eq.0) WRITE(3,'(A20,A50)')'MANNINGSUBGRID_FILE:', MANNINGSUBGRID_FILE
-# else
       WRITE(3,'(A15,A50)')'MANNING_TYPE:', MANNING_TYPE
       WRITE(3,'(A15,A50)')'MANNING_FILE:', MANNING_FILE
       WRITE(3,'(A20,A50)')'MANNINGSUBGRID_FILE:', MANNINGSUBGRID_FILE

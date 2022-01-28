@@ -298,18 +298,21 @@ MODULE GLOBAL
 # endif
 
 ! subgrid
+    LOGICAL :: MOMENTUM_EXCHANGE = .FALSE.
     INTEGER :: SubMainGridRatio, HalfRatio, NumPixel
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: Porosity
     REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: DepSubGrid,EtaSubGrid,HgtSubGrid,&
                           CdSubGrid,ManningSubGrid,&
                           AlphaSubU, AlphaSubV,&
                           USubGrid, VSubGrid
+    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UTilde, VTilde, UcTilde, VcTilde
+    REAL(SP), DIMENSION(:,:),ALLOCATABLE :: MomEXX, MomEXY, MomEYY
     ! us, vs are converted to pixel centers
     REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UcSubGrid,VcSubGrid
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: HgtPixel, CdPixel, &
                         EtaSubGridOut, DepSubGridOut, &
                         USubGridOut, VSubGridOut
-
+    
 ! pre-storage
     INTEGER :: Neta,PolyOrder
     REAL(SP) :: EtaMinVal,EtaMaxVal,D_Eta,AvgEta0

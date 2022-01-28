@@ -36,6 +36,16 @@ SUBROUTINE INITIALIZATION
                 CdSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
                 CdPixel(SubMainGridRatio,SubMainGridRatio) )
 
+      IF(MOMENTUM_EXCHANGE)THEN
+        ALLOCATE(UTilde(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 VTilde(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 UcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 VcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 MomEXX(Mloc1,Nloc),&
+                 MomEXY(Mloc1,Nloc),&
+                 MomEYY(Mloc1,Nloc) )
+      ENDIF
+
       IF(MANNING_TYPE=='SUBGRID')THEN
         ALLOCATE(ManningSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
         ALLOCATE(TauSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))

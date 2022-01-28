@@ -1046,10 +1046,14 @@ SUBROUTINE CALCULATE_ABC
     Rxy = Rxy + ZERO
    ENDIF
    
-   ! momentum exchange terms MomEXX_x, MomEXY_y
+   ! reconstruct SubGrid velocities
    IF(MOMENTUM_EXCHANGE .OR. CONSTRUCT_SUBGRID_UV) THEN
      CALL CALCULATE_SUBGRID_UV(1)
      CALL CALCULATE_SUBGRID_UV(2)
+   ENDIF
+
+   ! momentum exchange terms MomEXX_x, MomEXY_y  
+   IF(MOMENTUM_EXCHANGE)THEN
      IF(UPWINDING)THEN ! upwind
        IF(P(I,J)>ZERO)THEN
          IF(MASKu(I-1,J)==1)THEN
@@ -1093,15 +1097,6 @@ SUBROUTINE CALCULATE_ABC
          MomEXY_y= ZERO
        ENDIF
      ENDIF
-!# if defined (PARALLEL)
-!      if (myid.eq.0) then
-!         WRITE(3,*) '-------- CALCULATE_SUBGRID_UV  ----------------'
-!         WRITE(3,*) 'UTilde',USubGrid
-!      endif
-!# else
-!      WRITE(3,*) '-------- CALCULATE_SUBGRID_UV CALLED ----------------'
-!      WRITE(3,*) 'UTilde',USubGrid
-!# endif
    ENDIF 
   
    ! friction and vegetation
@@ -1190,8 +1185,7 @@ SUBROUTINE CALCULATE_ABC
    ENDIF
 
    ! momentum exchange terms MomEXY_x, MomEYY_y
-   IF(MOMENTUM_EXCHANGE .OR. CONSTRUCT_SUBGRID_UV) THEN
-
+   IF(MOMENTUM_EXCHANGE) THEN
      IF(UPWINDING)THEN ! upwind
        IF(P(I,J)>ZERO)THEN
          IF(MASKu(I-1,J)==1)THEN
@@ -1616,17 +1610,18 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
    ENDIF     ! end correction uv
    
    ! compute MomEXX, MomEXY, MomEYY
-   DO II = 1, SubMainGridRatio
-      DO JJ = 1, SubMainGridRatio
-         TmpMomEXX = TmpMomEXX + UTilde(I,J,II,JJ)**2*MAX(HgtPixel(II,JJ),0.0)
-         TmpMomEXY = TmpMomEXY + UTilde(I,J,II,JJ)*VTilde(I,J,II,JJ)*MAX(HgtPixel(II,JJ),0.0)
-         TmpMomEYY = TmpMomEYY + VTilde(I,J,II,JJ)**2*MAX(HgtPixel(II,JJ),0.0)
-      ENDDO
-   ENDDO
-   MomEXX = TmpMomEXX/REAL(SubMainGridRatio**2)
-   MomEXY = TmpMomEXY/REAL(SubMainGridRatio**2)
-   MomEYY = TmpMomEYY/REAL(SubMainGridRatio**2)
-
+   IF(MOMENTUM_EXCHANGE)THEN
+     DO II = 1, SubMainGridRatio
+        DO JJ = 1, SubMainGridRatio
+           TmpMomEXX = TmpMomEXX + UTilde(I,J,II,JJ)**2*MAX(HgtPixel(II,JJ),0.0)
+           TmpMomEXY = TmpMomEXY + UTilde(I,J,II,JJ)*VTilde(I,J,II,JJ)*MAX(HgtPixel(II,JJ),0.0)
+           TmpMomEYY = TmpMomEYY + VTilde(I,J,II,JJ)**2*MAX(HgtPixel(II,JJ),0.0)
+        ENDDO
+     ENDDO
+     MomEXX = TmpMomEXX/REAL(SubMainGridRatio**2)
+     MomEXY = TmpMomEXY/REAL(SubMainGridRatio**2)
+     MomEYY = TmpMomEYY/REAL(SubMainGridRatio**2)
+   ENDIF
 END SUBROUTINE CALCULATE_SUBGRID_UV
 
 SUBROUTINE CALCULATE_SUBGRID_CD(UorV, AvgEta, Cd)

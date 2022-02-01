@@ -1507,7 +1507,7 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
   ENDDO
   ENDDO
 
-  TmpWetFraction = pcount/SubMainGridRatio**2 + SmallPositive
+  TmpWetFraction = MIN(pcount/SubMainGridRatio**2 + SmallPositive, 1.0)
 
    ! uniform direction, linear factor: alpha_s
    IF(UorV==1)THEN
@@ -1618,9 +1618,9 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
            TmpMomEYY = TmpMomEYY + VTilde(I,J,II,JJ)**2*MAX(HgtPixel(II,JJ),0.0)
         ENDDO
      ENDDO
-     MomEXX = TmpMomEXX/REAL(SubMainGridRatio**2)
-     MomEXY = TmpMomEXY/REAL(SubMainGridRatio**2)
-     MomEYY = TmpMomEYY/REAL(SubMainGridRatio**2)
+     MomEXX(I,J) = TmpMomEXX/REAL(SubMainGridRatio**2)
+     MomEXY(I,J) = TmpMomEXY/REAL(SubMainGridRatio**2)
+     MomEYY(I,J) = TmpMomEYY/REAL(SubMainGridRatio**2)
    ENDIF
 END SUBROUTINE CALCULATE_SUBGRID_UV
 

@@ -1205,6 +1205,7 @@ SUBROUTINE CALCULATE_FRCU
   IF(MASK(I-1,J)==0.AND.MASK(I,J)==0)AvgEta=MIN(Eta(I-1,J),Eta(I,J))
 
 !  U-points
+  IF(SUBGRID_CD_FIXED) Cdu(I,J) = Cd_fixed
   IF(MANNING_TYPE=='VARY')Manning=ManningVary(I,J)
   IF(MANNING_TYPE=='UNIFORM'.OR.MANNING_TYPE=='VARY')THEN
    IF(Manning.GT.ZERO)THEN
@@ -1280,7 +1281,8 @@ SUBROUTINE CALCULATE_FRCV
   IF(MASK(I,J-1)==0.AND.MASK(I,J)==1)AvgEta=Eta(I,J)
   IF(MASK(I,J)==0.AND.MASK(I,J-1)==1)AvgEta=Eta(I,J-1)
   IF(MASK(I,J-1)==0.AND.MASK(I,J)==0)AvgEta=MIN(Eta(I,MAX(1,J-1)),Eta(I,J))
-
+  
+  IF(SUBGRID_CD_FIXED) Cdv(I,J) = Cd_fixed
   IF(MANNING_TYPE=='VARY')Manning=ManningVary(I,J)
   IF(MANNING_TYPE=='UNIFORM'.OR.MANNING_TYPE=='VARY')THEN
    IF(Manning.GT.ZERO)THEN
@@ -1402,19 +1404,14 @@ SUBROUTINE CALCULATE_SUBGRID_CD(UorV, AvgEta, Cd)
    IF(HgtPixel(II,JJ).GT.ZERO)THEN
     pcount=pcount+1
     Volume_AY=Volume_AY+HgtPixel(II,JJ)
-    IF(SUBGRID_CD_FIXED)THEN
-     ! just for test
-     CdPixel(II,JJ)=Cd_fixed
-    ELSE
-     ! cd = g*Manning^2/H^(1/3)
-     CdPixel(II,JJ)=grav*TmpManning**2 &
-               /MAX(MinDepFric, HgtPixel(II,JJ))**(1.0_SP/3.0_SP)
-     ! vegetation drag
+    ! cd = g*Manning^2/H^(1/3)
+    CdPixel(II,JJ)=grav*TmpManning**2 &
+                  /MAX(MinDepFric, HgtPixel(II,JJ))**(1.0_SP/3.0_SP)
+    ! vegetation drag
 # if defined(VEGETATION) || defined(ECO_MORPHOLOGY)
      CALL CALCULATE_VEG_DRAG(UorV,AvgEta,Cv)
      CdPixel(II,JJ)=CdPixel(II,JJ)+Cv
 # endif
-    ENDIF
     TmpFricDepth=TmpFricDepth + &
            HgtPixel(II,JJ)*sqrt(HgtPixel(II,JJ)/CdPixel(II,JJ))
    ELSE

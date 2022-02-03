@@ -29,29 +29,29 @@ SUBROUTINE INITIALIZATION
       ALLOCATE(DepSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
                EtaSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
                HgtSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                USubGrid(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                VSubGrid(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio),&
-                UcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                VcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                CdSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                CdPixel(SubMainGridRatio,SubMainGridRatio) )
+               UcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+               VcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+               CdPixel(SubMainGridRatio,SubMainGridRatio) )
 
-      IF(MOMENTUM_EXCHANGE.OR.CONSTRUCT_SUBGRID_UV)THEN
-        ALLOCATE(UTilde(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                 VTilde(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
+      IF(CONSTRUCT_SUBGRID_UV)THEN
+        ALLOCATE(USubGrid(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 VSubGrid(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio),&
+                 UTilde(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 VTilde(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio),&
                  UcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                 VcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
+                 VcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio) )
       ENDIF
 
-      IF(MOMENTUM_EXCHANGE)THEN
+      IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
         ALLOCATE(MomEXX(Mloc1,Nloc),&
-                 MomEXY(Mloc1,Nloc),&
-                 MomEYY(Mloc1,Nloc) )
+                 MomEXY(Mloc1,Nloc1),&
+                 MomEYY(Mloc,Nloc1) )
       ENDIF
 
       IF(MANNING_TYPE=='SUBGRID')THEN
-        ALLOCATE(ManningSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
-        ALLOCATE(TauSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
+        ALLOCATE(CdSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 TauSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 ManningSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
       ENDIF
 
 

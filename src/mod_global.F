@@ -36,8 +36,10 @@ MODULE GLOBAL
     LOGICAL :: ADI = .FALSE.
     LOGICAL :: HOPSCOTCH = .TRUE.
     LOGICAL :: IMPLICIT = .TRUE.
-    LOGICAL :: SUBGRID_UV_CORRECTION = .TRUE.
     LOGICAL :: CONSTRUCT_SUBGRID_UV = .TRUE.
+    LOGICAL :: SUBGRID_UV_CORRECTION = .TRUE.
+    LOGICAL :: CONSTRUCT_PIXEL_CENTER_VARIABLES = .TRUE.
+    LOGICAL :: CONSTRUCT_MOMENTUM_EXCHANGE = .FALSE.
     CHARACTER(LEN=14)::FORMAT_LEN
     CHARACTER(LEN=14)::FORMAT_LEN_SUB
 
@@ -49,7 +51,7 @@ MODULE GLOBAL
     REAL(SP) :: FroudeCap=10.0_SP
     REAL(SP) :: SWE_ETA_DEP=0.7_SP
     REAL(SP) :: NU=0.02_SP
-                         REAL(SP) :: MaxDepth
+    REAL(SP) :: MaxDepth
 
 ! some global variables
 ! Mloc1=Mloc+1, Nloc1=Nloc+1
@@ -298,14 +300,13 @@ MODULE GLOBAL
 # endif
 
 ! subgrid
-    LOGICAL :: MOMENTUM_EXCHANGE = .FALSE.
     INTEGER :: SubMainGridRatio, HalfRatio, NumPixel
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: Porosity
     REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: DepSubGrid,EtaSubGrid,HgtSubGrid,&
                           CdSubGrid,ManningSubGrid,&
                           AlphaSubU, AlphaSubV,&
                           USubGrid, VSubGrid
-    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UTilde, VTilde, UcTilde, VcTilde
+    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UTilde, VTilde,UcTilde,VcTilde
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: MomEXX, MomEXY, MomEYY
     ! us, vs are converted to pixel centers
     REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UcSubGrid,VcSubGrid

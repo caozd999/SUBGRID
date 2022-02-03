@@ -52,7 +52,7 @@ SUBROUTINE READ_INPUT
         if (myid.eq.0)WRITE(3,'(A20,A20)')'No PY sepecified ', 'use PY=1'
       ENDIF
 
-      if (myid.eq.0) WRITE(3,'(A7,I3,A7,I3)') 'PX   =',PX,'PY   =', PY
+      if (myid.eq.0) WRITE(3,'(A4,I3,A7,I3)') 'PX=',PX,' PY=', PY
 # else
       PX = 1
       PY = 1
@@ -100,9 +100,9 @@ SUBROUTINE READ_INPUT
       ENDIF
 
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A7,I3,A7,I3)') 'Mglob=',Mglob,'Nglob=', Nglob
+      if (myid.eq.0) WRITE(3,'(A7,I3,A10,I3)') 'Mglob=',Mglob,',  Nglob=', Nglob
 # else
-      WRITE(3,'(A7,I3,A7,I3)') 'Mglob=',Mglob,'Nglob=', Nglob
+      WRITE(3,'(A7,I3,A10,I3)') 'Mglob=',Mglob,',  Nglob=', Nglob
 # endif
 
 ! grid
@@ -139,7 +139,8 @@ SUBROUTINE READ_INPUT
       ENDIF
 
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A4,F12.2,A4,F12.2)')'DX=',DX,'DY=',DY
+      if (myid.eq.0) WRITE(3,'(A4,F12.2)')'DX=',DX 
+      if (myid.eq.0) WRITE(3,'(A4,F12.2)')'DY=',DY
 # else
       WRITE(3,'(A4,F12.2,A4,F12.2)')'DX=',DX,'DY=',DY
 # endif
@@ -336,209 +337,152 @@ SUBROUTINE READ_INPUT
 
 
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A12,A50)')'RIVER_FILE:', RIVER_FILE
-      if (myid.eq.0) WRITE(3,'(A12,A50)')'TIDE_FILE:',  TIDE_FILE
+      if (myid.eq.0) WRITE(3,'(A12,A30)')'RIVER_FILE:', RIVER_FILE
+      if (myid.eq.0) WRITE(3,'(A12,A30)')'TIDE_FILE:',  TIDE_FILE
 # else
-      WRITE(3,'(A12,A50)')'RIVER_FILE:', RIVER_FILE
-      WRITE(3,'(A12,A50)')'TIDE_FILE:',  TIDE_FILE
+      WRITE(3,'(A12,A30)')'RIVER_FILE:', RIVER_FILE
+      WRITE(3,'(A12,A30)')'TIDE_FILE:',  TIDE_FILE
 # endif
 
 
 ! physics
       CALL GET_INTEGER_VAL(Nonlinear,FILE_NAME,'Nonlinear',line,ierr)
-
       IF(ierr==1)THEN
         Nonlinear = 1
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'Nearline:', 'True'
-         WRITE(3,'(A40,A40)')'Nearline:', 'True'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'Nearline:', 'True'
-         WRITE(3,'(A40,A40)')'Nearline:', 'True'
-# endif
       ENDIF
 
 
       CALL GET_Float_VAL(NU,FILE_NAME,'NU',line,ierr)
       IF(ierr==1)THEN
         NU = 0.0
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'NU: Use default,', 'ZERO'
-         WRITE(3,'(A40,A40)')'NU: Use default,', 'ZERO'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'NU: Use default,', 'ZERO'
-         WRITE(3,'(A40,A40)')'NU: Use default,', 'ZERO'
-# endif
       ENDIF
 
 # if defined (PARALLEL)
-       if (myid.eq.0) WRITE(3,'(A10,I6)')'Nonlinear = ', Nonlinear
-       if (myid.eq.0) WRITE(3,'(A17,F12.6)')'Eddy Viscosity = ', NU
+       if (myid.eq.0) WRITE(3,'(A40,I6)')'Nonlinear = ', Nonlinear
+       if (myid.eq.0) WRITE(3,'(A40,F12.6)')'Eddy Viscosity = ', NU
 # else
-       WRITE(3,'(A10,I6)')'Nonlinear = ', Nonlinear
-       WRITE(3,'(A17,F12.6)')'Eddy Viscosity = ', NU
+       WRITE(3,'(A40,I6)')'Nonlinear = ', Nonlinear
+       WRITE(3,'(A40,F12.6)')'Eddy Viscosity = ', NU
 # endif
 
 ! friction
       CALL GET_LOGICAL_VAL(SUBGRID_CD_FIXED,FILE_NAME,'SUBGRID_CD_FIXED',line,ierr)
       IF(ierr==1)THEN
         SUBGRID_CD_FIXED = .TRUE.
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'SUBGRID_CD_FIXED: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'SUBGRID_CD_FIXED: Use default,', 'TRUE'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'SUBGRID_CD_FIXED: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'SUBGRID_CD_FIXED: Use default,', 'TRUE'
-# endif
       ENDIF
+# if defined (PARALLEL)
+       if (myid.eq.0) WRITE(3,'(A40,L6)')'SUBGRID_CD_FIXED = ', SUBGRID_CD_FIXED
+# else
+       WRITE(3,'(A40,L6)')'SUBGRID_CD_FIXED = ', SUBGRID_CD_FIXED
+# endif
 
-      CALL GET_LOGICAL_VAL(CONSTRUCT_SUBGRID_UV,FILE_NAME,'CONSTRUCT_SUBGRID_UV',line,ierr)
-      IF(ierr==1)THEN
+! subgrid uv
+     CALL GET_LOGICAL_VAL(CONSTRUCT_SUBGRID_UV,FILE_NAME,'CONSTRUCT_SUBGRID_UV',line,ierr)
+     IF(ierr==1)THEN
         CONSTRUCT_SUBGRID_UV = .TRUE.
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'CONSTRUCT_SUBGRID_UV: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'CONSTRUCT_SUBGRID_UV: Use default,', 'TRUE'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'CONSTRUCT_SUBGRID_UV: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'CONSTRUCT_SUBGRID_UV: Use default,', 'TRUE'
-# endif
-      ENDIF
+     ENDIF
 
-      CALL GET_LOGICAL_VAL(SUBGRID_UV_CORRECTION,FILE_NAME,'SUBGRID_UV_CORRECTION',line,ierr)
-      IF(ierr==1)THEN
+     CALL GET_LOGICAL_VAL(SUBGRID_UV_CORRECTION,FILE_NAME,'SUBGRID_UV_CORRECTION',line,ierr)
+     IF(ierr==1)THEN
         SUBGRID_UV_CORRECTION = .TRUE.
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'SUBGRID_UV_CORRECTION: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'SUBGRID_UV_CORRECTION: Use default,', 'TRUE'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'SUBGRID_UV_CORRECTION: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'SUBGRID_UV_CORRECTION: Use default,', 'TRUE'
-# endif
-      ENDIF
+     ENDIF
+ 
+     CALL GET_LOGICAL_VAL(CONSTRUCT_PIXEL_CENTER_VARIABLES,FILE_NAME, &
+                         'CONSTRUCT_PIXEL_CENTER_VARIABLES',line,ierr)
+     IF(ierr==1)THEN
+        CONSTRUCT_PIXEL_CENTER_VARIABLES = .TRUE.
+     ENDIF
 
-      CALL GET_LOGICAL_VAL(MOMENTUM_EXCHANGE,FILE_NAME,'MOMENTUM_EXCHANGE',line,ierr)
-      IF(ierr==1)THEN
-        MOMENTUM_EXCHANGE = .FALSE.
+     CALL GET_LOGICAL_VAL(CONSTRUCT_MOMENTUM_EXCHANGE,FILE_NAME, &
+                         'CONSTRUCT_MOMENTUM_EXCHANGE',line,ierr)
+     IF(ierr==1)THEN
+        CONSTRUCT_MOMENTUM_EXCHANGE = .FALSE.
+     ENDIF
+     
+     IF(CONSTRUCT_MOMENTUM_EXCHANGE) CONSTRUCT_SUBGRID_UV = .TRUE.
+     IF(.NOT.CONSTRUCT_SUBGRID_UV) SUBGRID_UV_CORRECTION = .FALSE.
+
 # if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
-         WRITE(3,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
-      endif
+       if (myid.eq.0) WRITE(3,'(A40,L6)')'CONSTRUCT_SUBGRID_UV = ', CONSTRUCT_SUBGRID_UV
+       if (myid.eq.0) WRITE(3,'(A40,L6)')'SUBGRID_UV_CORRECTION = ', SUBGRID_UV_CORRECTION
+       if (myid.eq.0) WRITE(3,'(A40,L6)')'CONSTRUCT_PIXEL_CENTER_VARIABLES = ', &
+                                           CONSTRUCT_PIXEL_CENTER_VARIABLES
+       if (myid.eq.0) WRITE(3,'(A40,L6)')'CONSTRUCT_MOMENTUM_EXCHANGE = ', &
+                                           CONSTRUCT_MOMENTUM_EXCHANGE
 # else
-         WRITE(*,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
-         WRITE(3,'(A40,A40)')'MOMENTUM_EXCHANGE: Use default,', 'FALSE'
+       WRITE(3,'(A40,L6)')'CONSTRUCT_SUBGRID_UV = ', CONSTRUCT_SUBGRID_UV
+       WRITE(3,'(A40,L6)')'SUBGRID_UV_CORRECTION = ', SUBGRID_UV_CORRECTION
+       WRITE(3,'(A40,L6)')'CONSTRUCT_PIXEL_CENTER_VARIABLES = ', &
+                            CONSTRUCT_PIXEL_CENTER_VARIABLES
+       WRITE(3,'(A40,L6)')'CONSTRUCT_MOMENTUM_EXCHANGE = ', &
+                            CONSTRUCT_MOMEMTUM_EXCHANGE
 # endif
-      ENDIF
 
      IF(SUBGRID_CD_FIXED)THEN
       CALL GET_Float_VAL(Cd_fixed,FILE_NAME,'Cd_fixed',line,ierr)
       IF(ierr==1)THEN
         Cd_fixed = 0.002
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'Cd_fixed: Use default,', '0.002'
-         WRITE(3,'(A40,A40)')'Cd_fixed: Use default,', '0.002'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'Cd_fixed: Use default,', '0.002'
-         WRITE(3,'(A40,A40)')'Cd_fixed: Use default,', '0.002'
-# endif
       ENDIF
-
-# if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A13,F12.6)')'Cd_fixed   =', Cd_fixed
-# else
-      WRITE(3,'(A13,F12.6)')'Cd_fixed   =', Cd_fixed
-# endif
-
      ELSE
-     CALL GET_STRING_VAL(MANNING_TYPE,FILE_NAME,'MANNING_TYPE',line,ierr)
+      CALL GET_STRING_VAL(MANNING_TYPE,FILE_NAME,'MANNING_TYPE',line,ierr)
 !     MANNING_TYPE: UNIFORM/VARY/SUBGRID
-     IF(ierr==1)THEN
-      MANNING_TYPE = 'UNIFORM'
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-         WRITE(3,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-         WRITE(3,'(A40,A40)')'MANNING_TYPE: Use default,', 'UNIFORM'
-# endif
-     ENDIF
-
-     IF(MANNING_TYPE(1:4)=='UNIF')THEN
-      CALL GET_Float_VAL(Manning,FILE_NAME,'Manning',line,ierr)
       IF(ierr==1)THEN
-        Manning = 0.01
-# if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'Manning: Use default,', '0.01'
-         WRITE(3,'(A40,A40)')'Manning: Use default,', '0.01'
-      endif
-# else
-         WRITE(*,'(A40,A40)')'Manning: Use default,', '0.01'
-         WRITE(3,'(A40,A40)')'Manning: Use default,', '0.01'
-# endif
+        MANNING_TYPE = 'UNIFORM'
       ENDIF
-     ENDIF ! uniform manning
 
-     IF(MANNING_TYPE(1:4)=='VARY')THEN
-      CALL GET_STRING_VAL(MANNING_FILE,FILE_NAME,'MANNING_FILE',line,ierr)
-      IF(ierr==1)THEN
+      IF(MANNING_TYPE(1:4)=='UNIF')THEN
+       CALL GET_Float_VAL(Manning,FILE_NAME,'Manning',line,ierr)
+       IF(ierr==1)THEN
+         Manning = 0.01
+       ENDIF
+      ENDIF ! uniform manning
+
+      IF(MANNING_TYPE(1:4)=='VARY')THEN
+       CALL GET_STRING_VAL(MANNING_FILE,FILE_NAME,'MANNING_FILE',line,ierr)
+       IF(ierr==1)THEN
 # if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'MANNING_FILE:', 'NOT FOUND, STOP'
-         WRITE(3,'(A40,A40)')'MANNING_FILE:', 'NOT FOUND, STOP'
-      endif
-       call MPI_FINALIZE ( ier )
+        if (myid.eq.0) THEN
+          WRITE(*,'(A40,A40)')'MANNING_FILE:', 'NOT FOUND, STOP'
+          WRITE(3,'(A40,A40)')'MANNING_FILE:', 'NOT FOUND, STOP'
+        endif
+        call MPI_FINALIZE ( ier )
 # else
          WRITE(*,'(A40,A40)')'MANNING_FILE:', 'NOT FOUND, STOP'
          WRITE(3,'(A40,A40)')'MANNING_FILE:', 'NOT FOUND, STOP'
 # endif
         STOP
-      ENDIF
-     ENDIF ! vary manning
+       ENDIF
+      ENDIF ! vary manning
 
-     IF(MANNING_TYPE(1:4)=='SUBG')THEN
-      CALL GET_STRING_VAL(MANNINGSUBGRID_FILE,FILE_NAME,'MANNINGSUBGRID_FILE',line,ierr)
-      IF(ierr==1)THEN
+      IF(MANNING_TYPE(1:4)=='SUBG')THEN
+       CALL GET_STRING_VAL(MANNINGSUBGRID_FILE,FILE_NAME,'MANNINGSUBGRID_FILE',line,ierr)
+       IF(ierr==1)THEN
 # if defined (PARALLEL)
-      if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'MANNINGSUBGRID_FILE:', 'NOT FOUND, STOP'
-         WRITE(3,'(A40,A40)')'MANNINGSUBGRID_FILE:', 'NOT FOUND, STOP'
-      endif
-       call MPI_FINALIZE ( ier )
+        if (myid.eq.0) THEN
+          WRITE(*,'(A40,A40)')'MANNINGSUBGRID_FILE:', 'NOT FOUND, STOP'
+          WRITE(3,'(A40,A40)')'MANNINGSUBGRID_FILE:', 'NOT FOUND, STOP'
+        endif
+        call MPI_FINALIZE ( ier )
 # else
          WRITE(*,'(A40,A40)')'MANNINGSUBGRID_FILE:', 'NOT FOUND, STOP'
          WRITE(3,'(A40,A40)')'MANNINGSUBGRID_FILE:', 'NOT FOUND, STOP'
 # endif
-        STOP
-      ENDIF
-     ENDIF ! subgrid manning
+         STOP
+       ENDIF
+      ENDIF ! subgrid manning
 
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A13,F12.6)')'Cd_fixed   =', Cd_fixed
-      if (myid.eq.0) WRITE(3,'(A13,F12.6)')'Manning    =', Manning
-      if (myid.eq.0) WRITE(3,'(A15,A50)')'MANNING_TYPE:', MANNING_TYPE
-      if (myid.eq.0) WRITE(3,'(A15,A50)')'MANNING_FILE:', MANNING_FILE
-      if (myid.eq.0) WRITE(3,'(A20,A50)')'MANNINGSUBGRID_FILE:', MANNINGSUBGRID_FILE
+      if (myid.eq.0) WRITE(3,'(A40,F12.6)')'Cd_fixed = ', Cd_fixed
+      if (myid.eq.0) WRITE(3,'(A40,F12.6)')'Manning  = ', Manning
+      if (myid.eq.0) WRITE(3,'(A40,A10)')'MANNING_TYPE = ', MANNING_TYPE
+      if (myid.eq.0) WRITE(3,'(A40,A30)')'MANNING_FILE = ', MANNING_FILE
+      if (myid.eq.0) WRITE(3,'(A40,A30)')'MANNINGSUBGRID_FILE = ', MANNINGSUBGRID_FILE
 # else
-      WRITE(3,'(A13,F12.6)')'Cd_fixed   =', Cd_fixed
-      WRITE(3,'(A13,F12.6)')'Manning    =', Manning
-      WRITE(3,'(A15,A50)')'MANNING_TYPE:', MANNING_TYPE
-      WRITE(3,'(A15,A50)')'MANNING_FILE:', MANNING_FILE
-      WRITE(3,'(A20,A50)')'MANNINGSUBGRID_FILE:', MANNINGSUBGRID_FILE
+      WRITE(3,'(A40,F12.6)')'Cd_fixed = ', Cd_fixed
+      WRITE(3,'(A40,F12.6)')'Manning  = ', Manning
+      WRITE(3,'(A40,A10)')'MANNING_TYPE = ', MANNING_TYPE
+      WRITE(3,'(A40,A30)')'MANNING_FILE = ', MANNING_FILE
+      WRITE(3,'(A40,A30)')'MANNINGSUBGRID_FILE = ', MANNINGSUBGRID_FILE
 # endif
 
      ENDIF ! end cd fixed
@@ -757,12 +701,12 @@ SUBROUTINE READ_INPUT
         IMPLICIT = .TRUE.
 # if defined (PARALLEL)
       if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'IMPLICIT: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'IMPLICIT: Use default,', 'TRUE'
+         WRITE(*,'(A40,A6)')'IMPLICIT: Use default,', 'TRUE'
+         WRITE(3,'(A40,A6)')'IMPLICIT: Use default,', 'TRUE'
       endif
 # else
-         WRITE(*,'(A40,A40)')'IMPLICIT: Use default,', 'TRUE'
-         WRITE(3,'(A40,A40)')'IMPLICIT: Use default,', 'TRUE'
+         WRITE(*,'(A40,A6)')'IMPLICIT: Use default,', 'TRUE'
+         WRITE(3,'(A40,A6)')'IMPLICIT: Use default,', 'TRUE'
 # endif
       ENDIF
 
@@ -859,14 +803,29 @@ SUBROUTINE READ_INPUT
 
       IF(ierr==1)THEN
         SubMainGridRatio = 1
+      ENDIF
+
 # if defined (PARALLEL)
       if (myid.eq.0) THEN
-         WRITE(*,'(A40,A40)')'SubMainGridRatio: not defined', 'Use 1'
-         WRITE(3,'(A40,A40)')'SubMainGridRatio: not defined', 'Use 1'
+         WRITE(*,'(A40,I3)')'SubMainGridRatio = ', SubMainGridRatio
+         WRITE(3,'(A40,I3)')'SubMainGridRatio = ', SubMainGridRatio
       endif
 # else
-         WRITE(*,'(A40,A40)')'SubMainGridRatio: not defined', 'Use 1'
-         WRITE(3,'(A40,A40)')'SubMainGridRatio: not defined', 'Use 1'
+         WRITE(*,'(A40,I3)')'SubMainGridRatio = ', SubMainGridRatio
+         WRITE(3,'(A40,I3)')'SubMainGridRatio = ', SubMainGridRatio
+# endif
+
+      IF(SubMainGridRatio==1)THEN
+        CONSTRUCT_MOMENTUM_EXCHANGE = .FALSE.
+        CONSTRUCT_SUBGRID_UV = .FALSE.
+# if defined (PARALLEL)
+       if (myid.eq.0) THEN
+         WRITE(*,'(A60)')'SubMainGridRatio=1 => MOMENTUM_EXCHANGE/SUBGRID_UV=F'
+         WRITE(3,'(A60)')'SubMainGridRatio=1 => MOMENTUM_EXCHANGE/SUBGRID_UV=F'
+       endif
+# else
+         WRITE(*,'(A60)')'SubMainGridRatio=1 => MOMENTUM_EXCHANGE/SUBGRID_UV=F'
+         WRITE(3,'(A60)')'SubMainGridRatio=1 => MOMENTUM_EXCHANGE/SUBGRID_UV=F'
 # endif
       ENDIF
 
@@ -1208,7 +1167,7 @@ SUBROUTINE PREVIEW
      ENDIF
      
      IF(OUT_SUBGRID_UV.AND.CONSTRUCT_SUBGRID_UV.AND. &
-        MANNING_TYPE=='SUBGRID'.AND.SubMainGridRatio.GT.1)THEN           
+        SubMainGridRatio.GT.1)THEN           
        
        ALLOCATE(USubGridOut(MMloc,NNloc))    
        CALL FLOW2ECO(UcSubGrid,USubGridOut)

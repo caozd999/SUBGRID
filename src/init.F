@@ -35,9 +35,13 @@ SUBROUTINE INITIALIZATION
 
       IF(CONSTRUCT_SUBGRID_UV)THEN
         ALLOCATE(USubGrid(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                 VSubGrid(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio) )
+                 VSubGrid(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio),&
+                 UTilde(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 VTilde(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio),&
+                 UcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),& 
+                 VcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio) )
       ENDIF
-
+    
       IF(MANNING_TYPE=='SUBGRID')THEN
         ALLOCATE(CdSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
                  TauSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&

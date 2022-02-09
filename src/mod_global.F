@@ -310,6 +310,10 @@ MODULE GLOBAL
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: HgtPixel, CdPixel, &
                         EtaSubGridOut, DepSubGridOut, &
                         USubGridOut, VSubGridOut
+    ! velocity fluctuation
+    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UTilde, VTilde
+    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UcTilde,VcTilde
+    REAL(SP), DIMENSION(:,:),ALLOCATABLE :: UTildeOut, VTildeOut
 
 ! pre-storage
     INTEGER :: Neta,PolyOrder
@@ -355,6 +359,7 @@ MODULE GLOBAL
          OUT_RESIST_FORCE=.FALSE., &
          OUT_SUBGRID_TAU=.FALSE., &
          OUT_SUBGRID_UV = .FALSE., &
+         OUT_SUBGRID_UVTILDE = .FALSE., &
          OUT_SUBGRID_BED=.FALSE., &
          OUT_SUBGRID_ETA=.FALSE., &
          OUT_HVEG=.FALSE., &

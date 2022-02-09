@@ -1424,10 +1424,13 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
   INTEGER, INTENT(IN)  :: UorV
   REAL(SP) :: Volume_AY,TmpFricDepth,TmpManning, Cv, &
         TotFlux,TmpFlux,DeltaFluxL,DeltaFluxR,DeltaFluxU,DeltaFluxD
+  REAL(SP) :: TmpWetFrac
   INTEGER :: pcount
+
   Volume_AY=ZERO
   TmpFricDepth=ZERO
   CdPixel=ZERO
+  TmpWetFrac=ZERO
   pcount=0
  
   IF(MANNING_TYPE == 'UNIFORM') TmpManning=Manning
@@ -1483,37 +1486,43 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
 
   ENDDO
   ENDDO
+
+  TmpWetFrac = MIN(REAL(pcount/NumPixel)+1.0E-5, 1.0)
    ! uniform direction, linear factor: alpha_s
-   IF(UorV==1)THEN
+  IF(UorV==1)THEN
 
     DO JJ=1,SubMainGridRatio
     DO II=1,SubMainGridRatio
      IF(HgtPixel(II,JJ).GT.ZERO)THEN
       USubGrid(I,J,II,JJ) = U(I,J)/( sqrt(CdPixel(II,JJ)/HgtPixel(II,JJ)) &
                           * TmpFricDepth/Volume_AY )
+      UTilde(I,J,II,JJ) = USubGrid(I,J,II,JJ) - U(I,J)/TmpWetFrac
      ELSE
       USubGrid(I,J,II,JJ) = ZERO
+      UTilde(I,J,II,JJ) = ZERO
      ENDIF
     ENDDO
     ENDDO
 
-   ELSEIF(UorV==2)THEN
+  ELSEIF(UorV==2)THEN
 
     DO JJ=1,SubMainGridRatio
     DO II=1,SubMainGridRatio
      IF(HgtPixel(II,JJ).GT.ZERO)THEN
       VSubGrid(I,J,II,JJ) = V(I,J)/( sqrt(CdPixel(II,JJ)/HgtPixel(II,JJ)) &
                           * TmpFricDepth/Volume_AY )
+      VTilde(I,J,II,JJ) = VSubGrid(I,J,II,JJ) - V(I,J)/TmpWetFrac
      ELSE
       VSubGrid(I,J,II,JJ) = ZERO
+      VTilde(I,J,II,JJ) = ZERO
      ENDIF
     ENDDO
     ENDDO
 
-   ENDIF ! UorV
+  ENDIF ! UorV
   
    ! adjust subgrid u to make mass conserve
-   IF(SUBGRID_UV_CORRECTION)THEN
+  IF(SUBGRID_UV_CORRECTION)THEN
     IF(UorV==1)THEN
      DO II = 1,SubMainGridRatio
       ! total flux through U coarse cell face
@@ -1543,11 +1552,12 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
           USubGrid(I,J,II,JJ) = USubGrid(I,J,II,JJ)*(P(I,J)+DeltaFluxR)*REAL(SubMainGridRatio)/TmpFlux
          ENDIF
         ENDIF
+        UTilde(I,J,II,JJ) = USubGrid(I,J,II,JJ) - U(I,J)/TmpWetFrac
        ENDDO ! end JJ loop
       ENDIF  ! end if tmpflux /= 0
      ENDDO   ! end II loop      
 
-    ELSEIF(UorV==2)THEN
+   ELSEIF(UorV==2)THEN
      DO JJ = 1,SubMainGridRatio
       ! total flux through U coarse cell face
       TmpFlux = ZERO
@@ -1576,12 +1586,13 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
           VSubGrid(I,J,II,JJ) = VSubGrid(I,J,II,JJ)*(Q(I,J)+DeltaFluxU)*REAL(SubMainGridRatio)/TmpFlux
          ENDIF
         ENDIF
+        VTilde(I,J,II,JJ) = VSubGrid(I,J,II,JJ) - V(I,J)/TmpWetFrac
        ENDDO ! end II loop
       ENDIF  ! end TmpFlux /=0
      ENDDO   ! end JJ loop
 
     ENDIF    ! end UorV
-   ENDIF     ! end correction uv
+  ENDIF     ! end correction uv
    
 END SUBROUTINE CALCULATE_SUBGRID_UV
 # endif
@@ -1590,6 +1601,8 @@ END SUBROUTINE CALCULATE_SUBGRID_UV
 SUBROUTINE CALCULATE_PIXEL_CENTER_VARIABLES
   USE GLOBAL
   IMPLICIT NONE
+  
+  REAL(SP) :: TmpWetFrac
 
   ! subgrid total depth and friction cd
   HgtSubGrid = EtaSubGrid+DepSubGrid
@@ -1598,21 +1611,27 @@ SUBROUTINE CALCULATE_PIXEL_CENTER_VARIABLES
   IF(SubMainGridRatio.GT.1)THEN
     DO J=Jbeg,Jend
     DO I=Ibeg,Iend
+    ! wet fraction (porosity)
+      TmpWetFrac = MIN(POROSITY(I,J)+1.0E-5,1.0)
     ! velocity at pixel centers
       DO JJ=1,SubMainGridRatio
        DO II=1,HalfRatio
          UcSubGrid(I,J,II,JJ)=USubGrid(I,J,II+HalfRatio,JJ)
+         UcTilde(I,J,II,JJ)=UTilde(I,J,II+HalfRatio,JJ)
        ENDDO
        DO II=HalfRatio+1,SubMainGridRatio
          UcSubGrid(I,J,II,JJ)=USubGrid(I+1,J,II-HalfRatio,JJ)
+         UcTilde(I,J,II,JJ)=UTilde(I+1,J,II-HalfRatio,JJ)
        ENDDO
       ENDDO
       DO II=1,SubMainGridRatio
        DO JJ=1,HalfRatio
          VcSubGrid(I,J,II,JJ)=VSubGrid(I,J,II,JJ+HalfRatio)
+         VcTilde(I,J,II,JJ)=VTilde(I,J,II,JJ+HalfRatio)
        ENDDO
        DO JJ=HalfRatio+1,SubMainGridRatio
          VcSubGrid(I,J,II,JJ)=VSubGrid(I,J+1,II,JJ-HalfRatio)
+         VcTilde(I,J,II,JJ)=VTilde(I,J+1,II,JJ-HalfRatio)
        ENDDO
       ENDDO
     ENDDO

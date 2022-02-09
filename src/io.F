@@ -23,9 +23,9 @@ SUBROUTINE READ_INPUT
         TITLE='---TEST RUN---'
       ENDIF
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,*)'---- LOG FILE ---'
+      if (myid.eq.0) WRITE(3,*)'-----------------LOG_FILE-----------------'
       if (myid.eq.0) WRITE(3,*)TITLE
-      if (myid.eq.0) WRITE(3,*)' --------------input start --------------'
+      if (myid.eq.0) WRITE(3,*)'=================INPUT===================='
 # else
       WRITE(3,*)'---- LOG FILE ---'
       WRITE(3,*)TITLE
@@ -34,7 +34,7 @@ SUBROUTINE READ_INPUT
 
 # if defined (PARALLEL)
       if (myid.eq.0) WRITE(3,*)'                                         '
-      if (myid.eq.0) WRITE(3,*)'-------------- PARALLEL -----------------'    
+      if (myid.eq.0) WRITE(3,*)'---------------PARALLEL-------------------'    
 # endif
 
 # if defined (PARALLEL)
@@ -63,7 +63,7 @@ SUBROUTINE READ_INPUT
 
 # if defined (PARALLEL)
       if (myid.eq.0) WRITE(3,*)'                                         '
-      if (myid.eq.0) WRITE(3,*)'-------------- GRID INFO -----------------'
+      if (myid.eq.0) WRITE(3,*)'--------------GRID_INFO-------------------'
 # else
       WRITE(3,*)'                                         '
       WRITE(3,*)'-------------- GRID INFO -----------------'   
@@ -144,16 +144,31 @@ SUBROUTINE READ_INPUT
       ENDIF
 
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A4,F6.4)')'DX=',DX 
-      if (myid.eq.0) WRITE(3,'(A4,F6.4)')'DY=',DY
+      if (myid.eq.0) WRITE(3,'(A4,F7.4)')'DX=',DX 
+      if (myid.eq.0) WRITE(3,'(A4,F7.4)')'DY=',DY
 # else
       WRITE(3,'(A4,F6.4)')'DX=',DX 
       WRITE(3,'(A4,F6.4)')'DY=',DY
 # endif
 
+! subgrid ratio
+# if defined (SUBGRID)
+      CALL GET_INTEGER_VAL(SubMainGridRatio,FILE_NAME,'SubMainGridRatio',line,ierr)
+      IF(ierr==1)THEN
+        SubMainGridRatio = 1
+      ENDIF
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A18,I3)')'SubMainGridRatio=', SubMainGridRatio
+# else
+      WRITE(3,'(A18,I3)')'SubMainGridRatio=', SubMainGridRatio
+# endif
+# endif
+
 ! result folder
       CALL GET_STRING_VAL(RESULT_FOLDER,FILE_NAME,'RESULT_FOLDER',line,ierr)
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------OUTPUT_FOLDER -----------------'
       if (myid.eq.0) WRITE(3,'(A17,A20)')'RESULT_FOLDER = ', RESULT_FOLDER
 # else
       WRITE(3,'(A17,A20)')'RESULT_FOLDER = ', RESULT_FOLDER
@@ -162,6 +177,8 @@ SUBROUTINE READ_INPUT
 ! depth
       CALL GET_STRING_VAL(DEPTH_FILE,FILE_NAME,'DEPTH_FILE',line,ierr)
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------DEPTH_FILE -----------------'
       if (myid.eq.0) WRITE(3,'(A14,A20)')'DEPTH_FILE = ', DEPTH_FILE
 # else
       WRITE(3,'(A14,A20)')'DEPTH_FILE = ', DEPTH_FILE
@@ -252,6 +269,8 @@ SUBROUTINE READ_INPUT
 
 
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------TIME------------------'
       if (myid.eq.0) WRITE(3,'(A13,L2)')'CONSTANT_DT=', CONSTANT_DT
       if (myid.eq.0) WRITE(3,'(A10,F12.4)')'DT_FIXED=', DT_FIXED
       if (myid.eq.0) WRITE(3,'(A12,F12.2)')'TOTAL_TIME=', TOTAL_TIME
@@ -267,6 +286,14 @@ SUBROUTINE READ_INPUT
 
 
 ! boundary conditions
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------OBC-----------------'
+# else 
+      WRITE(3,*)'                                         '
+      WRITE(3,*)'--------------OBC-----------------'
+# endif
+
 # if defined (COUPLING)
       CALL GET_STRING_VAL(COUPLING_FILE,FILE_NAME,'COUPLING_FILE',line,ierr)
 # if defined (PARALLEL)
@@ -368,7 +395,7 @@ SUBROUTINE READ_INPUT
 
 # if defined (PARALLEL)
        if (myid.eq.0) WRITE(3,*) '                                        '
-       if (myid.eq.0) WRITE(3,*) '-------------- PHYSICS -----------------'
+       if (myid.eq.0) WRITE(3,*) '--------------PHYSICS------------------'
        if (myid.eq.0) WRITE(3,'(A11,I2)')'Nonlinear=', Nonlinear
        if (myid.eq.0) WRITE(3,'(A16,F6.4)')'Eddy Viscosity=', NU
 # else
@@ -398,13 +425,25 @@ SUBROUTINE READ_INPUT
       IF(ierr==1)THEN
         SUBGRID_UV_CORRECTION = .TRUE.
       ENDIF
+ 
+      CALL GET_LOGICAL_VAL(CONSTRUCT_PIXEL_CENTER_VARIABLES,FILE_NAME, &
+                          'CONSTRUCT_PIXEL_CENTER_VARIABLES',line,ierr)
+      IF(ierr==1)THEN
+        CONSTRUCT_PIXEL_CENTER_VARIABLES = .TRUE.
+      ENDIF
+
+      IF(.NOT.CONSTRUCT_SUBGRID_UV) SUBGRID_UV_CORRECTION = .FALSE.
 
 # if defined (PARALLEL)
        if (myid.eq.0) WRITE(3,'(A23,L2)')'CONSTRUCT_SUBGRID_UV =', CONSTRUCT_SUBGRID_UV
        if (myid.eq.0) WRITE(3,'(A24,L2)')'SUBGRID_UV_CORRECTION =', SUBGRID_UV_CORRECTION
+       if (myid.eq.0) WRITE(3,'(A35,L2)')'CONSTRUCT_PIXEL_CENTER_VARIABLES =', &
+                                           CONSTRUCT_PIXEL_CENTER_VARIABLES
 # else
        WRITE(3,'(A23,L2)')'CONSTRUCT_SUBGRID_UV =', CONSTRUCT_SUBGRID_UV
        WRITE(3,'(A24,L2)')'SUBGRID_UV_CORRECTION =', SUBGRID_UV_CORRECTION
+       WRITE(3,'(A35,L2)')'CONSTRUCT_PIXEL_CENTER_VARIABLES = ', &
+                            CONSTRUCT_PIXEL_CENTER_VARIABLES
 # endif
 
      IF(SUBGRID_CD_FIXED)THEN
@@ -463,6 +502,8 @@ SUBROUTINE READ_INPUT
       ENDIF ! end cd fixed
 
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------BOTTOM_SHEAR-----------------'
       if (myid.eq.0) WRITE(3,'(A12,F6.4)')'Cd_fixed = ', Cd_fixed
       if (myid.eq.0) WRITE(3,'(A12,F6.4)')'Manning  = ', Manning
       if (myid.eq.0) WRITE(3,'(A16,A10)')'MANNING_TYPE = ', MANNING_TYPE
@@ -490,6 +531,8 @@ SUBROUTINE READ_INPUT
       CALL GET_STRING_VAL(VEG_N_SUBGRID_FILE,FILE_NAME,'VEG_N_SUBGRID_FILE',line,ierr)
       CALL GET_STRING_VAL(VEG_D_SUBGRID_FILE,FILE_NAME,'VEG_D_SUBGRID_FILE',line,ierr)
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------VEGETATION-----------------'
       if (myid.eq.0) WRITE(3,'(A10,A50)')'VEG_TYPE:', VEG_TYPE
       if (myid.eq.0) WRITE(3,'(A12,A50)')'VEG_H_FILE:', VEG_H_FILE
       if (myid.eq.0) WRITE(3,'(A12,A50)')'VEG_N_FILE:', VEG_N_FILE
@@ -535,6 +578,8 @@ SUBROUTINE READ_INPUT
       CALL GET_Float_VAL(MorphFactor,FILE_NAME,'MorphFactor',line,ierr)
       CALL GET_Float_VAL(TIME_MORPH_SPINUP,FILE_NAME,'TIME_MORPH_SPINUP',line,ierr)
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------SEDIMENT-----------------'
       if (myid.eq.0) WRITE(3,'(A3,F8.4)')'Ws=',Ws
       if (myid.eq.0) WRITE(3,'(A7,F8.4)')'NU_SED=',NU_SED
       if (myid.eq.0) WRITE(3,'(A7,F8.4)')'Tau_CE=',Tau_CE
@@ -604,6 +649,8 @@ SUBROUTINE READ_INPUT
      CALL GET_Float_VAL(COEF_MORTALITY_FLOW,FILE_NAME,'COEF_MORTALITY_FLOW',line,ierr)
 
 # if defined (PARALLEL)
+       if (myid.eq.0) WRITE(3,*)'                                         '
+       if (myid.eq.0) WRITE(3,*)'--------------ECO_MORPHOLOGY-----------------'
        if (myid.eq.0) WRITE(3,'(A28,A50)')'INITIAL_STEMHEIGHT_FILE = ', INITIAL_STEMHEIGHT_FILE
        if (myid.eq.0) WRITE(3,'(A28,A50)')'INITIAL_STEMDENSITY_FILE = ', INITIAL_STEMDENSITY_FILE
        if (myid.eq.0) WRITE(3,'(A28,A50)')'INITIAL_STEMDIAMETER_FILE = ', INITIAL_STEMDIAMETER_FILE
@@ -672,6 +719,8 @@ SUBROUTINE READ_INPUT
       ENDIF
 
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'--------------NUMERICS-----------------'
       if(myid.eq.0) WRITE(3,'(A6,L2)')'ADI =', ADI
       if(myid.eq.0) WRITE(3,'(A12,L2)')'HOPSCOTCH =', HOPSCOTCH
       if(myid.eq.0) WRITE(3,'(A11,L2)')'IMPLICIT =', IMPLICIT
@@ -719,11 +768,6 @@ SUBROUTINE READ_INPUT
 
 ! subgrid
 # if defined (SUBGRID)
-      CALL GET_INTEGER_VAL(SubMainGridRatio,FILE_NAME,'SubMainGridRatio',line,ierr)
-      IF(ierr==1)THEN
-        SubMainGridRatio = 1
-      ENDIF
-
       CALL GET_Float_VAL(EtaMinVal,FILE_NAME,'EtaMinVal',line,ierr)
       IF(ierr==1)THEN
         EtaMinVal = -1.0
@@ -745,13 +789,13 @@ SUBROUTINE READ_INPUT
       ENDIF
 
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,'(A18,I3)')'SubMainGridRatio=', SubMainGridRatio
+      if (myid.eq.0) WRITE(3,*)'                                         '
+      if (myid.eq.0) WRITE(3,*)'-----------------PRE_STORE---------------'
       if (myid.eq.0) WRITE(3,'(A11,F7.4)')'EtaMinVal=', EtaMinVal
       if (myid.eq.0) WRITE(3,'(A11,F6.4)')'EtaMaxVal=', EtaMaxVal
       if (myid.eq.0) WRITE(3,'(A7,F6.4)')'D_Eta=', D_Eta
       if (myid.eq.0) WRITE(3,'(A11,I2)')'PolyOrder=', PolyOrder
 # else
-      WRITE(3,'(A18,I3)')'SubMainGridRatio=', SubMainGridRatio
       WRITE(3,'(A11,F7.4)')'EtaMinVal=', EtaMinVal
       WRITE(3,'(A11,F6.4)')'EtaMaxVal=', EtaMaxVal
       WRITE(3,'(A7,F6.4)')'D_Eta=', D_Eta
@@ -769,6 +813,7 @@ SUBROUTINE READ_INPUT
         OBSTACLE=.TRUE.
       ENDIF
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
       if (myid.eq.0) WRITE(3,'(A15,A30)')'OBSTACLE_FILE:', OBSTACLE_FILE
 # else
       WRITE(3,'(A15,A30)')'OBSTACLE_FILE:', OBSTACLE_FILE
@@ -779,6 +824,7 @@ SUBROUTINE READ_INPUT
       IF(ierr==1)THEN
         INACTIVE_PNT=.FALSE.
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
       if (myid.eq.0) WRITE(3,'(A18,A5)')'INACTIVE_PNT_FILE:', 'NO'
 # else
       WRITE(3,'(A18,A5)')'INACTIVE_PNT_FILE:', 'NO'
@@ -786,6 +832,7 @@ SUBROUTINE READ_INPUT
       ELSE
         INACTIVE_PNT=.TRUE.
 # if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,*)'                                         '
       if (myid.eq.0) WRITE(3,'(A18,A50)')'INACTIVE_PNT_FILE:', INACTIVE_PNT_FILE
 # else
       WRITE(3,'(A18,A50)')'INACTIVE_PNT_FILE:', INACTIVE_PNT_FILE
@@ -836,9 +883,12 @@ SUBROUTINE READ_INPUT
 
 !
 # if defined (PARALLEL)
-      if (myid.eq.0) WRITE(3,*)' --------------input end --------------'
+      if (myid.eq.0) WRITE(3,*)'                                  '
+      if (myid.eq.0) WRITE(3,*)'==================INPUT_END=================='
+
 # else
-      WRITE(3,*)' --------------input end --------------'
+      WRITE(3,*)'                                  '
+      WRITE(3,*)'==================INPUT_END=================='
 # endif
 
 END SUBROUTINE READ_INPUT
@@ -1031,8 +1081,8 @@ SUBROUTINE PREVIEW
         call PutFile(TMP_NAME,V,Mloc,Nloc1)
      ENDIF
      
-     IF(OUT_SUBGRID_UV.AND.CONSTRUCT_SUBGRID_UV.AND. &
-        MANNING_TYPE=='SUBGRID'.AND.SubMainGridRatio.GT.1)THEN           
+     IF(OUT_SUBGRID_UV.AND.(CONSTRUCT_SUBGRID_UV.OR. &
+        SubMainGridRatio ==1) )THEN           
        
        ALLOCATE(USubGridOut(MMloc,NNloc))    
        CALL FLOW2ECO(UcSubGrid,USubGridOut)
@@ -1867,7 +1917,7 @@ SUBROUTINE STATISTICS
 # endif
 
 ! print screen
-     WRITE(*,*) '----------------- STATISTICS ----------------'
+     WRITE(*,*) '-----------------STATISTICS----------------'
      WRITE(*,*) ' TIME          DT'
      WRITE(*,101) Time, DT
      WRITE(*,*) ' MassVolume    Energy        MaxEta        MinEta        Max U         Max V '
@@ -1875,7 +1925,7 @@ SUBROUTINE STATISTICS
      WRITE(*,*) ' Froude        MaxSed        MinSed        MaxDepChange'
      WRITE(*,101) FrMax,MaxSed,MinSed
 ! print log file
-     WRITE(3,*) '----------------- STATISTICS ----------------'
+     WRITE(3,*) '-----------------STATISTICS----------------'
      WRITE(3,*) ' TIME          DT'
      WRITE(3,101) Time, DT
      WRITE(3,*) ' MassVolume    Energy        MaxEta        MinEta        Max U         Max V '

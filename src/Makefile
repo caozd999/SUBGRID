@@ -1,6 +1,6 @@
 #-----------BEGIN MAKEFILE-------------------------------------------------
             SHELL         = /bin/sh
-            DEF_FLAGS     = -P -C -traditional 
+            DEF_FLAGS     = -P -traditional 
             EXEC          = flood
 #==========================================================================
 #--------------------------------------------------------------------------
@@ -9,7 +9,7 @@
 #--------------------------------------------------------------------------
 
 #            FLAG_1 = -DDOUBLE_PRECISION 
-             FLAG_2 = -DPARALLEL
+            FLAG_2 = -DPARALLEL
 #            FLAG_3 = -DDEBUG
             FLAG_4 = -DSUBGRID
 #            FLAG_5 = -DCOUPLING
@@ -21,7 +21,7 @@
 #            FLAG_11 = -DVEGETATION
 #            FLAG_12 = -DECO_MORPHOLOGY
 #            FLAG_13 = -DFREESLIP_BC
-             FLAG_15 = -DSUBSURFACE
+#            FLAG_15 = -DSUBSURFACE
 #--------------------------------------------------------------------------
 #  mpi defs 
 #--------------------------------------------------------------------------

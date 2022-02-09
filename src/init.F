@@ -29,18 +29,20 @@ SUBROUTINE INITIALIZATION
       ALLOCATE(DepSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
                EtaSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
                HgtSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                USubGrid(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                VSubGrid(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio),&
-                UcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                VcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                CdSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
-                CdPixel(SubMainGridRatio,SubMainGridRatio) )
+               UcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+               VcSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+               CdPixel(SubMainGridRatio,SubMainGridRatio) )
 
-      IF(MANNING_TYPE=='SUBGRID')THEN
-        ALLOCATE(ManningSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
-        ALLOCATE(TauSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
+      IF(CONSTRUCT_SUBGRID_UV)THEN
+        ALLOCATE(USubGrid(Mloc1,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 VSubGrid(Mloc,Nloc1,SubMainGridRatio,SubMainGridRatio) )
       ENDIF
 
+      IF(MANNING_TYPE=='SUBGRID')THEN
+        ALLOCATE(CdSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 TauSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
+                 ManningSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
+      ENDIF
 
       HalfRatio=SubMainGridRatio/2
       NumPixel=SubMainGridRatio*SubMainGridRatio
@@ -490,10 +492,12 @@ SUBROUTINE INITIALIZATION
     IF(myid == 0)THEN
      WRITE(3,*)'initialization completed'
      WRITE(*,*)'initialization completed'
+     WRITE(*,*)'                        '
     ENDIF
 # else
      WRITE(3,*)'initialization completed'
      WRITE(*,*)'initialization completed'
+     WRITE(*,*)'                        '
 # endif
 !# endif
 

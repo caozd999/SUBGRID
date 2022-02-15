@@ -1,0 +1,91 @@
+!INPUT FILE FOR SUBGRID MODEL
+  ! NOTE: all input parameter are capital sensitive
+  ! --------------------TITLE-------------------------------------
+  ! title only for log file
+TITLE = CHANNEL
+  ! --------------------HOT_START---------------------------------
+HOT_START = F
+FileNumber_HOTSTART = 1
+  ! -------------------PARALLEL_INFO-----------------------------
+  ! 
+  !    PX,PY - processor numbers in X and Y
+  !    NOTE: make sure consistency with mpirun -np n (px*py)
+  !    
+PX = 8
+PY = 4
+  ! --------------------DEPTH---------------------------------
+SubMainGridRatio = 4
+DEPTH_FILE = Channel_topography.txt
+  ! -------------------RESULT---------------------------------
+  ! result folder
+RESULT_FOLDER = ./4/
+  ! ----------------------DIMENSION---------------------------
+  ! global grid dimension
+Mglob = 80
+Nglob = 64
+  ! ---------------------GRID_RESOLUTION----------------------
+DX = 4.0
+DY = 4.0
+  ! --------------------TIME----------------------------------
+  ! time: total computational time/ plot time / screen interval 
+  ! all in seconds
+TOTAL_TIME = 176400.0
+PLOT_INTV = 3600.0
+PLOT_INTV_STATION = 3600.0
+SCREEN_INTV = 120.0
+  ! ------------------OneWayCoupling-----------------------
+  ! if do coupling, have to set -DCOUPLING in Makefile
+COUPLING_FILE = none
+  ! -------------------TIDE_BOUNDARY----------------------
+TIDE_CLAMPED = T
+TIDE_FILE = ./tide_4bc.txt
+  ! -------------------RIVER_DISCHARGE-------------------
+RIVER_CLAMPED = F
+RIVER_FILE = none
+  ! ----------------PERIODIC_BOUNDARY_CONDITION ---------
+  ! South-North periodic boundary condition
+  !
+PERIODIC_X = F
+PERIODIC_Y = F
+  ! ----------------PHYSICS------------------------------
+  ! parameters to control type of equations
+Nonlinear = 1
+NU = 0.04
+SUBGRID_CD_FIXED = F
+!Cd_fixed = 0.0025
+MANNING_TYPE = SUBGRID
+MANNINGSUBGRID_FILE = manning.txt
+CONSTRUCT_SUBGRID_UV = T
+SUBGRID_UV_CORRECTION = T
+CONSTRUCT_PIXEL_CENTER_VARIABLES = T
+CONSTRUCT_MOMENTUM_EXCHANGE = T
+
+  ! ----------------NUMERICS----------------------------
+ADI = F
+HOPSCOTCH = T
+IMPLICIT = T
+CFL = 0.5
+FroudeCap = 3.0
+
+  ! --------------WET-DRY-------------------------------
+  ! MinDepth for wetting-drying
+MinDepth=0.01
+MinDepFric=0.001
+  ! -----------------OUTPUT-----------------------------
+  ! stations 
+  ! if NumberStations>0, need input i,j in STATION_FILE
+NumberStations = 0
+STATIONS_FILE = station.txt
+  ! output variables, T=.TRUE, F = .FALSE.
+DEPTH_OUT = T
+U = T
+V = T
+ETA = T
+MASK = F
+P = T
+Q = T
+SUBGRID_ETA = T
+SUBGRID_UV = T
+SUBGRID_UVTILDE = T
+TMP = F
+ME = T

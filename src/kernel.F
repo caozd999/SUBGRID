@@ -106,7 +106,7 @@ PROGRAM SUBGRID_MODEL
    ! tide boundary
    IF(TIDE_CLAMPED)THEN
     CALL TIDE_BC
-                         CALL FILLIN_ETA_GHOST
+    CALL FILLIN_ETA_GHOST
 # if defined (DEBUG)
 #    if defined (PARALLEL)
        IF(myid==0) WRITE(*,*) 'TIDE_BC'     
@@ -877,6 +877,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(Ibeg,J)
    U(I,J)=U(Ibeg,J)
    H_u(I,J)=H_u(Ibeg,J)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Ibeg,J)
   ENDDO
   ENDDO
 
@@ -886,6 +887,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(Ibeg,J)
    V(I,J)=V(Ibeg,J)
    H_v(I,J)=H_v(Ibeg,J)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Ibeg,J)
   ENDDO
   ENDDO
 
@@ -904,6 +906,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(Iend1,J)
    U(I,J)=U(Iend1,J)
    H_u(I,J)=H_u(Iend1,J)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Iend1,J)
   ENDDO
   ENDDO
 
@@ -913,6 +916,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(Iend,J)
    V(I,J)=V(Iend,J)
    H_v(I,J)=H_v(Iend,J)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Iend,J)
   ENDDO
   ENDDO
 
@@ -931,6 +935,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(I,Jbeg)
    V(I,J)=V(I,Jbeg)
    H_v(I,J)=H_v(I,Jbeg)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jbeg)
   ENDDO
   ENDDO
 
@@ -940,6 +945,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(I,Jbeg)
    U(I,J)=U(I,Jbeg)
    H_u(I,J)=H_u(I,Jbeg)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jbeg)
   ENDDO
   ENDDO
 
@@ -958,6 +964,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(I,Jend1)
    V(I,J)=V(I,Jend1)
    H_v(I,J)=H_v(I,Jend1)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jend1)
   ENDDO
   ENDDO
 
@@ -967,6 +974,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(I,Jend)
    U(I,J)=U(I,Jend)
    H_u(I,J)=H_u(I,Jend)
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jend)
   ENDDO
   ENDDO
 
@@ -983,8 +991,9 @@ SUBROUTINE CALCULATE_ABC
   IMPLICIT NONE
   LOGICAL :: UPWINDING = .TRUE.
   REAL(SP) :: upwind,Rxx,Rxy,Ryx,Ryy
+  REAL(SP) :: MomEXX_x, MomEYY_y,TmpMomEXX,TmpMomEYY,TmpMomEXY
   INTEGER :: UorV
-
+  
 !  calculate pq for cross-derivatives
   DO J=Jbeg,Jend1
   DO I=Ibeg,Iend1
@@ -996,6 +1005,46 @@ SUBROUTINE CALCULATE_ABC
    ENDIF
   ENDDO
   ENDDO
+
+! reconstruct SUBGRID velocities
+  IF(CONSTRUCT_SUBGRID_UV)THEN
+    !USubGrid, UTilde
+    DO J=Jbeg,Jend
+    DO I=Ibeg,Iend1
+      CALL CALCULATE_SUBGRID_UV(1)
+    ENDDO
+    ENDDO
+    !VSubGrid, VTilde
+    DO J=Jbeg,Jend1
+    DO I=Ibeg,Iend
+      CALL CALCULATE_SUBGRID_UV(2)
+    ENDDO
+    ENDDO
+  ENDIF
+
+! compute MomEXX, MomEXY, and MomEYY
+  IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+    DO J=Jbeg,Jend1
+    DO I=Ibeg,Iend1
+      TmpMomEXX = ZERO
+      TmpMomEXY = ZERO
+      TmpMomEYY = ZERO
+      DO II=1,SubMainGridRatio
+      DO JJ=1,SubMainGridRatio
+        TmpMomEXX = TmpMomEXX+UTilde(I,J,II,JJ)*UTilde(I,J,II,JJ) &
+                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), ZERO)
+        TmpMomEXY = TmpMomEXY+UTilde(I,J,II,JJ)*VTilde(I,J,II,JJ) &
+                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), ZERO)
+        TmpMomEYY = TmpMomEYY+VTilde(I,J,II,JJ)*VTilde(I,J,II,JJ) &
+                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), ZERO)
+      ENDDO
+      ENDDO   
+      MomEXX(I,J) = TmpMomEXX/REAL(NumPixel)*MASKu(I,J)
+      MomEXY(I,J) = TmpMomEXY/REAL(NumPixel)*MASKu(I,J)*MASKv(I,J)
+      MomEYY(I,J) = TmpMomEYY/REAL(NumPixel)*MASKv(I,J)
+    ENDDO
+    ENDDO
+  ENDIF
 
 !  A_u
   DO J=Jbeg,Jend
@@ -1054,26 +1103,56 @@ SUBROUTINE CALCULATE_ABC
     TotResistFX(I,J)=rho_w*FrcU*U(I,J)
    ENDIF
 
-   ! reconstruct SUBGRID USubGrid
-   IF(CONSTRUCT_SUBGRID_UV)THEN
-     CALL CALCULATE_SUBGRID_UV(1)
-   ENDIF
+   ! momentum exchange terms
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+     IF(UPWINDING)THEN ! upwind
+       IF(P(I,J)>ZERO)THEN
+         IF(MASKu(I-1,J)==1)THEN
+           MomEXX_x = (MomEXX(I,J)-MomEXX(I-1,J))/DX
+         ELSE
+           MomEXX_x = ZERO
+         ENDIF
+       ELSE
+         IF(MASKu(I+1,J)==1)THEN
+           MomEXX_x = (MomEXX(I+1,J)-MomEXX(I,J))/DX
+         ELSE
+           MomEXX_x = ZERO
+         ENDIF
+       ENDIF !(P(I,J)>ZERO
+     ELSE   ! central diff (not tested)
+       IF(MASKu(I+1,J)*MASKu(I-1,J)==1)THEN
+         MomEXX_x= 0.5_SP*(MomEXX(I+1,J)-MomEXX(I-1,J))/DX
+       ELSE
+         MomEXX_x= ZERO
+       ENDIF
+     ENDIF !upwind
+   ENDIF !construct_momentum_exchange
 
+   ! compute A_u, B
    IF(IMPLICIT)THEN
     A_u(I,J)=grav*H_u(I,J)*H_u(I,J)*DT &
         /(Max(MinDepth,H_u(I,J)) + FrcU*DT)
     A_u(I,J)=A_u(I,J)*MASKu(I,J)
 
     B(I,J)=DT/(1.0_SP+FrcU*DT/MAX(MinDepth,H_u(I,J))) &
-       *(      &
-         Cori(I,J)*0.25_SP*(Q(I,J)+Q(I,J+1)+Q(I-1,J)+Q(I-1,J+1)) &
+       *(Cori(I,J)*0.25_SP*(Q(I,J)+Q(I,J+1)+Q(I-1,J)+Q(I-1,J+1)) &
        - Nonlinear*upwind &
        - Nonlinear*(PQ(I,J+1)-PQ(I,J))/DY &
        + NU*(Rxx + Rxy) &
        + P(I,J)/DT )
 
+    IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+      B(I,J)=DT/(1.0_SP+FrcU*DT/MAX(MinDepth,H_u(I,J))) &
+             *( Cori(I,J)*0.25_SP*(Q(I,J)+Q(I,J+1)+Q(I-1,J)+Q(I-1,J+1)) &
+               - Nonlinear*upwind &
+               - Nonlinear*(PQ(I,J+1)-PQ(I,J))/DY &
+               + NU*(Rxx + Rxy) &
+               + P(I,J)/DT &
+               - Nonlinear*MomEXX_x  &
+               - Nonlinear*(MomEXY(I,J+1)-MomEXY(I,J))/DY )
+    ENDIF
     B(I,J)=B(I,J)*MASKu(I,J)
-   ENDIF
+   ENDIF !implicit
 
   ENDDO
   ENDDO
@@ -1134,11 +1213,32 @@ SUBROUTINE CALCULATE_ABC
     TotResistFY(I,J)=rho_w*FrcV*V(I,J)
    ENDIF
 
-   ! reconstruct SUBGRID USubGrid
-   IF(CONSTRUCT_SUBGRID_UV)THEN
-     CALL CALCULATE_SUBGRID_UV(2)
-   ENDIF
+   ! momentum exchange terms
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+     IF(UPWINDING)THEN ! upwind
+       IF(Q(I,J)>ZERO)THEN
+         IF(MASKv(I,J-1)==1)THEN
+           MomEYY_y = (MomEYY(I,J)-MomEYY(I,J-1))/DY
+         ELSE
+           MomEYY_y = ZERO
+         ENDIF
+       ELSE
+         IF(MASKv(I,J+1)==1)THEN
+           MomEYY_y = (MomEYY(I,J+1)-MomEYY(I,J))/DY
+         ELSE
+           MomEYY_y = ZERO
+         ENDIF
+       ENDIF
+     ELSE   ! central diff (not tested)
+       IF(MASKv(I,J+1)*MASKv(I,J-1)==1)THEN
+         MomEYY_y = 0.5_SP*(MomEYY(I,J+1)-MomEYY(I,J-1))/DY
+       ELSE
+         MomEYY_y= ZERO
+       ENDIF
+     ENDIF !upwind
+   ENDIF !construct_momentum_exchange
 
+   ! compute A_v, C
    IF(IMPLICIT)THEN
     A_v(I,J)=grav*H_v(I,J)*H_v(I,J)*DT &
         /(Max(MinDepth,H_v(I,J)) + FrcV*DT)
@@ -1152,8 +1252,18 @@ SUBROUTINE CALCULATE_ABC
        + NU*(Ryx + Ryy) &
        + Q(I,J)/DT )
 
+    IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+      C(I,J)=DT/(1.0_SP+FrcV*DT/MAX(Mindepth,H_v(I,J))) &
+            *(-Cori(I,J)*0.25_SP*(P(I,J)+P(I+1,J)+P(I,J-1)+P(I+1,J-1)) &
+              - Nonlinear*upwind &
+              - Nonlinear*(PQ(I+1,J)-PQ(I,J))/DX &
+              + NU*(Ryx + Ryy) &
+              + Q(I,J)/DT &
+              - Nonlinear*MomEYY_y  &
+              - Nonlinear*(MomEXY(I+1,J)-MomEXY(I,J))/DX )
+    ENDIF
     C(I,J)=C(I,J)*MASKv(I,J)
-   ENDIF
+   ENDIF !implicit
 
   ENDDO
   ENDDO
@@ -1487,38 +1597,43 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
   ENDDO
   ENDDO
 
-  TmpWetFrac = MIN(REAL(pcount/NumPixel)+1.0E-5, 1.0)
+  TmpWetFrac = REAL(pcount/NumPixel)
+
    ! uniform direction, linear factor: alpha_s
   IF(UorV==1)THEN
-
     DO JJ=1,SubMainGridRatio
     DO II=1,SubMainGridRatio
      IF(HgtPixel(II,JJ).GT.ZERO)THEN
       USubGrid(I,J,II,JJ) = U(I,J)/( sqrt(CdPixel(II,JJ)/HgtPixel(II,JJ)) &
                           * TmpFricDepth/Volume_AY )
-      UTilde(I,J,II,JJ) = USubGrid(I,J,II,JJ) - U(I,J)/TmpWetFrac
+      IF(TmpWetFrac>ZERO)THEN
+       UTilde(I,J,II,JJ) = USubGrid(I,J,II,JJ) - U(I,J)/TmpWetFrac
+      ELSE
+       UTilde(I,J,II,JJ) = ZERO
+      ENDIF
      ELSE
       USubGrid(I,J,II,JJ) = ZERO
       UTilde(I,J,II,JJ) = ZERO
      ENDIF
     ENDDO
     ENDDO
-
   ELSEIF(UorV==2)THEN
-
     DO JJ=1,SubMainGridRatio
     DO II=1,SubMainGridRatio
      IF(HgtPixel(II,JJ).GT.ZERO)THEN
       VSubGrid(I,J,II,JJ) = V(I,J)/( sqrt(CdPixel(II,JJ)/HgtPixel(II,JJ)) &
                           * TmpFricDepth/Volume_AY )
-      VTilde(I,J,II,JJ) = VSubGrid(I,J,II,JJ) - V(I,J)/TmpWetFrac
+      IF(TmpWetFrac>ZERO)THEN
+       VTilde(I,J,II,JJ) = VSubGrid(I,J,II,JJ) - V(I,J)/TmpWetFrac
+      ELSE
+       VTilde(I,J,II,JJ) = ZERO
+      ENDIF
      ELSE
       VSubGrid(I,J,II,JJ) = ZERO
       VTilde(I,J,II,JJ) = ZERO
      ENDIF
     ENDDO
     ENDDO
-
   ENDIF ! UorV
   
    ! adjust subgrid u to make mass conserve
@@ -1552,7 +1667,11 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
           USubGrid(I,J,II,JJ) = USubGrid(I,J,II,JJ)*(P(I,J)+DeltaFluxR)*REAL(SubMainGridRatio)/TmpFlux
          ENDIF
         ENDIF
-        UTilde(I,J,II,JJ) = USubGrid(I,J,II,JJ) - U(I,J)/TmpWetFrac
+        IF(TmpWetFrac>ZERO)THEN
+         UTilde(I,J,II,JJ) = USubGrid(I,J,II,JJ) - U(I,J)/TmpWetFrac
+        ELSE
+         UTilde(I,J,II,JJ) = ZERO
+        ENDIF
        ENDDO ! end JJ loop
       ENDIF  ! end if tmpflux /= 0
      ENDDO   ! end II loop      
@@ -1586,15 +1705,19 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
           VSubGrid(I,J,II,JJ) = VSubGrid(I,J,II,JJ)*(Q(I,J)+DeltaFluxU)*REAL(SubMainGridRatio)/TmpFlux
          ENDIF
         ENDIF
-        VTilde(I,J,II,JJ) = VSubGrid(I,J,II,JJ) - V(I,J)/TmpWetFrac
+        IF(TmpWetFrac>ZERO)THEN
+         VTilde(I,J,II,JJ) = VSubGrid(I,J,II,JJ) - V(I,J)/TmpWetFrac
+        ELSE
+         VTilde(I,J,II,JJ) = ZERO
+        ENDIF
        ENDDO ! end II loop
       ENDIF  ! end TmpFlux /=0
      ENDDO   ! end JJ loop
-
     ENDIF    ! end UorV
   ENDIF     ! end correction uv
    
 END SUBROUTINE CALCULATE_SUBGRID_UV
+
 # endif
 
 
@@ -1602,8 +1725,6 @@ SUBROUTINE CALCULATE_PIXEL_CENTER_VARIABLES
   USE GLOBAL
   IMPLICIT NONE
   
-  REAL(SP) :: TmpWetFrac
-
   ! subgrid total depth and friction cd
   HgtSubGrid = EtaSubGrid+DepSubGrid
 
@@ -1611,8 +1732,6 @@ SUBROUTINE CALCULATE_PIXEL_CENTER_VARIABLES
   IF(SubMainGridRatio.GT.1)THEN
     DO J=Jbeg,Jend
     DO I=Ibeg,Iend
-    ! wet fraction (porosity)
-      TmpWetFrac = MIN(POROSITY(I,J)+1.0E-5,1.0)
     ! velocity at pixel centers
       DO JJ=1,SubMainGridRatio
        DO II=1,HalfRatio
@@ -2181,8 +2300,7 @@ SUBROUTINE HOPSCOTCH_SCHEME
 # endif
 # endif
 
-        CALL FILLIN_ETA_GHOST
-
+CALL FILLIN_ETA_GHOST
 
 END SUBROUTINE HOPSCOTCH_SCHEME
 

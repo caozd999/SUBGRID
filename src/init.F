@@ -42,6 +42,12 @@ SUBROUTINE INITIALIZATION
                  VcTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio) )
       ENDIF
     
+      IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+        ALLOCATE(MomEXX(Mloc1,Nloc),&
+                 MomEXY(Mloc1,Nloc1),&
+                 MomEYY(Mloc,Nloc1) )
+      ENDIF
+
       IF(MANNING_TYPE=='SUBGRID')THEN
         ALLOCATE(CdSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&
                  TauSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),&

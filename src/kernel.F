@@ -752,10 +752,13 @@ SUBROUTINE CALCULATE_H_PQ_UV
 # endif
   IMPLICIT NONE
   REAL(SP) :: Utotal,Utheta,Fr,Pgrad
-
+  REAL(SP) :: P_old, Q_old
 ! P and Q
   DO J=Jbeg,Jend
   DO I=Ibeg,Iend1
+     
+     P_old = P(I,J)
+
 # if defined (SUBSURFACE) 
 !$$$
                IF(MASKu(I,J)==0)THEN
@@ -778,13 +781,25 @@ SUBROUTINE CALCULATE_H_PQ_UV
                  P(I,J) =-A_u(I,J)*Pgrad/DX+B(I,J)
                  P(I,J) =P(I,J)*MASKu(I,J)
                  U(I,J) =P(I,J)/MAX(MinDepth,H_u(I,J))
-
 # endif
+    Fr=SQRT(GRAV*Max(MinDepth,H_u(I,J)))
+    IF(ABS(U(I,J))/Fr.gt.FroudeCap)THEN
+     U(I,J)=FroudeCap*Fr
+     P(I,J)=U(I,J)*Max(H_u(I,J),MinDepth)
+    ENDIF
+
+    IF(OUT_MOMBALANCE)THEN
+      LACx(I,J) = (P(I,J)-P_old)/DT
+      PGx(I,J) = grav*H_u(I,J)*Pgrad/DX
+    ENDIF
+
   ENDDO
   ENDDO
 
   DO J=Jbeg,Jend1
   DO I=Ibeg,Iend
+
+     Q_old = Q(I,J)
 # if defined (SUBSURFACE)
                IF(MASKv(I,J)==0)THEN
                  Q(I,J)=Q_ground(I,J)
@@ -802,35 +817,34 @@ SUBROUTINE CALCULATE_H_PQ_UV
                  Pgrad=ETA(I,J)-ETA(I,J-1)
                  IF(MASK(I,J-1)<1) Pgrad=MAX(ZERO,ETA(I,J)-EtaScreen(I,J-1))  
                  IF(MASK(I,J)<1) Pgrad=MIN(ZERO,EtaScreen(I,J)-Eta(I,J-1))
-
                  Q(I,J) =-A_v(I,J)*Pgrad/DY+C(I,J)
 
                  Q(I,J) =Q(I,J)*MASKv(I,J)
                  V(I,J) =Q(I,J)/MAX(MinDepth,H_v(I,J))
 # endif
-   
-  ENDDO
-  ENDDO
-
-! apply froude cap in directions
-
-   DO J=Jbeg,Jend
-   DO I=Ibeg,Iend1
-    Fr=SQRT(GRAV*Max(MinDepth,H_u(I,J)))
-    IF(ABS(U(I,J))/Fr.gt.FroudeCap)THEN
-     U(I,J)=FroudeCap*Fr
-     P(I,J)=U(I,J)*Max(H_u(I,J),MinDepth)
-    ENDIF
-   ENDDO
-   ENDDO
-
-   DO J=Jbeg,Jend1
-   DO I=Ibeg,Iend
     Fr=SQRT(GRAV*Max(MinDepth,H_v(I,J)))
     IF(ABS(V(I,J))/Fr.gt.FroudeCap)THEN
      V(I,J)=FroudeCap*Fr
      Q(I,J)=V(I,J)*Max(H_v(I,J),MinDepth)
     ENDIF
+
+    IF(OUT_MOMBALANCE)THEN
+      LACy(I,J) = (Q(I,J)-Q_old)/DT
+      PGy(I,J) = grav*H_v(I,J)*Pgrad/DY 
+    ENDIF
+   
+  ENDDO
+  ENDDO
+
+! apply froude cap in directions
+! moved to the loop above - Zhendong
+   DO J=Jbeg,Jend
+   DO I=Ibeg,Iend1
+   ENDDO
+   ENDDO
+
+   DO J=Jbeg,Jend1
+   DO I=Ibeg,Iend
    ENDDO
    ENDDO
 
@@ -871,11 +885,12 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
  if( n_west .eq. MPI_PROC_NULL )then
 # endif
 
-  DO J=Jbeg,Jend
+!  DO J=Jbeg,Jend
+  DO J=1,Nloc
   DO I=1,Nghost
    MASKu(I,J)=MASKu(Ibeg,J)
    P(I,J)=P(Ibeg,J)
-   U(I,J)=U(Ibeg,J)
+!   U(I,J)=U(Ibeg,J)
    H_u(I,J)=H_u(Ibeg,J)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Ibeg,J)
   ENDDO
@@ -885,7 +900,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=1,Nghost
    MASKv(I,J)=MASKv(Ibeg,J)
    Q(I,J)=Q(Ibeg,J)
-   V(I,J)=V(Ibeg,J)
+!   V(I,J)=V(Ibeg,J)
    H_v(I,J)=H_v(Ibeg,J)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Ibeg,J)
   ENDDO
@@ -900,11 +915,12 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
  if( n_east .eq. MPI_PROC_NULL )then
 # endif
 
-  DO J=Jbeg,Jend
+!  DO J=Jbeg,Jend
+  DO J=1,Nloc
   DO I=Iend1+1,Mloc1
    MASKu(I,J)=MASKu(Iend1,J)
    P(I,J)=P(Iend1,J)
-   U(I,J)=U(Iend1,J)
+!   U(I,J)=U(Iend1,J)
    H_u(I,J)=H_u(Iend1,J)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Iend1,J)
   ENDDO
@@ -914,7 +930,7 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=Iend1,Mloc
    MASKv(I,J)=MASKv(Iend,J)
    Q(I,J)=Q(Iend,J)
-   V(I,J)=V(Iend,J)
+ !  V(I,J)=V(Iend,J)
    H_v(I,J)=H_v(Iend,J)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Iend,J)
   ENDDO
@@ -933,17 +949,18 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=1,Mloc
    MASKv(I,J)=MASKv(I,Jbeg)
    Q(I,J)=Q(I,Jbeg)
-   V(I,J)=V(I,Jbeg)
+ !  V(I,J)=V(I,Jbeg)
    H_v(I,J)=H_v(I,Jbeg)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jbeg)
   ENDDO
   ENDDO
 
   DO J=1,Nghost
-  DO I=1,Mloc1
+!  DO I=1,Mloc1
+  DO I=Ibeg,Iend1
    MASKu(I,J)=MASKu(I,Jbeg)
    P(I,J)=P(I,Jbeg)
-   U(I,J)=U(I,Jbeg)
+!   U(I,J)=U(I,Jbeg)
    H_u(I,J)=H_u(I,Jbeg)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jbeg)
   ENDDO
@@ -962,17 +979,18 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=1,Mloc
    MASKv(I,J)=MASKv(I,Jend1)
    Q(I,J)=Q(I,Jend1)
-   V(I,J)=V(I,Jend1)
+!   V(I,J)=V(I,Jend1)
    H_v(I,J)=H_v(I,Jend1)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jend1)
   ENDDO
   ENDDO
 
   DO J=Jend1,Nloc
-  DO I=1,Mloc1
+!  DO I=1,Mloc1
+  DO I=Ibeg,Iend1
    MASKu(I,J)=MASKu(I,Jend)
    P(I,J)=P(I,Jend)
-   U(I,J)=U(I,Jend)
+!   U(I,J)=U(I,Jend)
    H_u(I,J)=H_u(I,Jend)
    IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jend)
   ENDDO
@@ -1032,11 +1050,11 @@ SUBROUTINE CALCULATE_ABC
       DO II=1,SubMainGridRatio
       DO JJ=1,SubMainGridRatio
         TmpMomEXX = TmpMomEXX+UTilde(I,J,II,JJ)*UTilde(I,J,II,JJ) &
-                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), ZERO)
+                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), MinDepth)
         TmpMomEXY = TmpMomEXY+UTilde(I,J,II,JJ)*VTilde(I,J,II,JJ) &
-                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), ZERO)
+                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), MinDepth)
         TmpMomEYY = TmpMomEYY+VTilde(I,J,II,JJ)*VTilde(I,J,II,JJ) &
-                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), ZERO)
+                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), MinDepth)
       ENDDO
       ENDDO   
       MomEXX(I,J) = TmpMomEXX/REAL(NumPixel)*MASKu(I,J)
@@ -1101,6 +1119,7 @@ SUBROUTINE CALCULATE_ABC
 
    IF(OUT_RESIST_FORCE)THEN
     TotResistFX(I,J)=rho_w*FrcU*U(I,J)
+    IF(OUT_MOMBALANCE) BSx(I,J) = FrcU*U(I,J)
    ENDIF
 
    ! momentum exchange terms
@@ -1148,11 +1167,20 @@ SUBROUTINE CALCULATE_ABC
                - Nonlinear*(PQ(I,J+1)-PQ(I,J))/DY &
                + NU*(Rxx + Rxy) &
                + P(I,J)/DT &
-               - Nonlinear*MomEXX_x  &
+               - Nonlinear*MomEXX_x &
                - Nonlinear*(MomEXY(I,J+1)-MomEXY(I,J))/DY )
     ENDIF
     B(I,J)=B(I,J)*MASKu(I,J)
    ENDIF !implicit
+   
+   ! export the momentum balance terms
+   IF(OUT_MOMBALANCE)THEN
+     ADVECx(I,J) = Nonlinear*upwind + Nonlinear*(PQ(I,J+1)-PQ(I,J))/DY
+     DIFFUx(I,J) = NU*(Rxx + Rxy)
+     IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+       MEx(I,J) = Nonlinear*MomEXX_x + Nonlinear*(MomEXY(I,J+1)-MomEXY(I,J))/DY
+     ENDIF
+   ENDIF
 
   ENDDO
   ENDDO
@@ -1211,6 +1239,7 @@ SUBROUTINE CALCULATE_ABC
 
    IF(OUT_RESIST_FORCE)THEN
     TotResistFY(I,J)=rho_w*FrcV*V(I,J)
+    IF(OUT_MOMBALANCE) BSy(I,J) = FrcV*V(I,J)
    ENDIF
 
    ! momentum exchange terms
@@ -1264,6 +1293,15 @@ SUBROUTINE CALCULATE_ABC
     ENDIF
     C(I,J)=C(I,J)*MASKv(I,J)
    ENDIF !implicit
+
+   ! export the momentum balance terms
+   IF(OUT_MOMBALANCE)THEN
+     ADVECy(I,J) = Nonlinear*upwind + Nonlinear*(PQ(I+1,J)-PQ(I,J))/DX
+     DIFFUy(I,J) = NU*(Ryx + Ryy)
+     IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+       MEy(I,J) = Nonlinear*MomEYY_y + Nonlinear*(MomEXY(I+1,J)-MomEXY(I,J))/DX
+     ENDIF
+   ENDIF
 
   ENDDO
   ENDDO

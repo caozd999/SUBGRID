@@ -474,7 +474,7 @@ SUBROUTINE READ_INPUT
       IF(MANNING_TYPE(1:4)=='UNIF')THEN
        CALL GET_Float_VAL(Manning,FILE_NAME,'Manning',line,ierr)
        IF(ierr==1)THEN
-         Manning = 0.01
+         Manning = 0.02
        ENDIF
       ENDIF ! uniform manning
       
@@ -894,7 +894,8 @@ SUBROUTINE READ_INPUT
       CALL GET_LOGICAL_VAL(OUT_SUBGRID_TAU,FILE_NAME,'SUBGRID_TAU',line,ierr)
       CALL GET_LOGICAL_VAL(OUT_RESIST_FORCE,FILE_NAME,'RESIST_FORCE',line,ierr)
       CALL GET_LOGICAL_VAL(OUT_TMP,FILE_NAME,'TMP',line,ierr)
-      CALL GET_LOGICAL_VAL(OUT_MOMENTUM,FILE_NAME,'ME',line,ierr)
+      CALL GET_LOGICAL_VAL(OUT_MOMEXCHANGE,FILE_NAME,'ME',line,ierr)
+      CALL GET_LOGICAL_VAL(OUT_MOMBALANCE,FILE_NAME,'MB',line,ierr)
 
 !
 # if defined (PARALLEL)
@@ -1129,7 +1130,7 @@ SUBROUTINE PREVIEW
        
      ENDIF
 
-     IF(CONSTRUCT_MOMENTUM_EXCHANGE.AND.OUT_MOMENTUM)THEN
+     IF(CONSTRUCT_MOMENTUM_EXCHANGE.AND.OUT_MOMEXCHANGE)THEN
        TMP_NAME = TRIM(FDIR)//'mexx_'//TRIM(FILE_NAME)
        call PutFile(TMP_NAME,MomEXX,Mloc1,Nloc)
        TMP_NAME = TRIM(FDIR)//'mexy_'//TRIM(FILE_NAME)
@@ -1157,7 +1158,7 @@ SUBROUTINE PREVIEW
 
      IF(OUT_Q)THEN
         TMP_NAME = TRIM(FDIR)//'q_'//TRIM(FILE_NAME)
-         call PutFile(TMP_NAME,Q,Mloc,Nloc)
+         call PutFile(TMP_NAME,Q,Mloc,Nloc1)
      ENDIF
 
      IF(OUT_PORO)THEN
@@ -1269,6 +1270,36 @@ SUBROUTINE PREVIEW
      IF(OUT_TMP)THEN
         TMP_NAME = TRIM(FDIR)//'tmp_'//TRIM(FILE_NAME)
         call PutFile(TMP_NAME,tmp4preview,Mloc,Nloc)
+     ENDIF
+! ******** output momentum balance terms
+     IF(OUT_MOMBALANCE)THEN
+        TMP_NAME = TRIM(FDIR)//'ADVx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVECx,Mloc1,Nloc)
+        TMP_NAME = TRIM(FDIR)//'ADVy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,ADVECy,Mloc,Nloc1)
+        TMP_NAME = TRIM(FDIR)//'DIFx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,DIFFUx,Mloc1,Nloc)
+        TMP_NAME = TRIM(FDIR)//'DIFy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,DIFFUy,Mloc,Nloc1)
+        TMP_NAME = TRIM(FDIR)//'LACx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,LACx,Mloc1,Nloc)
+        TMP_NAME = TRIM(FDIR)//'LACy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,LACy,Mloc,Nloc1)
+        TMP_NAME = TRIM(FDIR)//'BSx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,BSx,Mloc1,Nloc)
+        TMP_NAME = TRIM(FDIR)//'BSy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,BSy,Mloc,Nloc1)
+        TMP_NAME = TRIM(FDIR)//'PGx_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,PGx,Mloc1,Nloc)
+        TMP_NAME = TRIM(FDIR)//'PGy_'//TRIM(FILE_NAME)
+        call PutFile(TMP_NAME,PGy,Mloc,Nloc1)
+
+        IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+          TMP_NAME = TRIM(FDIR)//'MEx_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,MEx,Mloc1,Nloc)
+          TMP_NAME = TRIM(FDIR)//'MEy_'//TRIM(FILE_NAME)
+          call PutFile(TMP_NAME,MEy,Mloc,Nloc1)
+        ENDIF
      ENDIF
 
 

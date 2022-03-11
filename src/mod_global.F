@@ -319,6 +319,9 @@ MODULE GLOBAL
     ! momentum exchange
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: MomEXX, MomEXY, MomEYY
     
+    ! momentum balance terms
+    REAL(SP), DIMENSION(:,:),ALLOCATABLE :: ADVECx, ADVECy, DIFFUx, DIFFUy, MEx, MEy, &
+                                            PGx, PGy, LACx, LACy, BSx, BSy
 ! pre-storage
     INTEGER :: Neta,PolyOrder
     REAL(SP) :: EtaMinVal,EtaMaxVal,D_Eta,AvgEta0
@@ -370,6 +373,7 @@ MODULE GLOBAL
          OUT_NVEG=.FALSE., &
          OUT_DVEG=.FALSE., &
          OUT_TMP=.FALSE.,  &
-         OUT_MOMENTUM=.FALSE.
+         OUT_MOMEXCHANGE=.FALSE., &
+         OUT_MOMBALANCE=.FALSE.
 
 END MODULE GLOBAL

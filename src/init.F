@@ -54,6 +54,23 @@ SUBROUTINE INITIALIZATION
                  ManningSubGrid(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio))
       ENDIF
 
+      IF(OUT_MOMBALANCE)THEN
+        ALLOCATE(ADVECx(Mloc1,Nloc), &
+                 ADVECy(Mloc,Nloc1), &
+                 DIFFUx(Mloc1,Nloc), &
+                 DIFFUy(Mloc,Nloc1), &
+                 LACx(Mloc1,Nloc), &
+                 LACy(Mloc,Nloc1), &
+                 BSx(Mloc1,Nloc),  &
+                 BSy(Mloc,Nloc1),  &
+                 PGx(Mloc1,Nloc),  &
+                 PGy(Mloc,Nloc1)   )
+      ENDIF
+
+      IF(OUT_MOMBALANCE .AND. CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+        ALLOCATE(MEx(Mloc1, Nloc), MEy(Mloc,Nloc1))
+      ENDIF
+
       HalfRatio=SubMainGridRatio/2
       NumPixel=SubMainGridRatio*SubMainGridRatio
       ALLOCATE(HgtPixel(SubMainGridRatio,SubMainGridRatio))

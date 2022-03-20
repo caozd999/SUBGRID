@@ -313,12 +313,13 @@ MODULE GLOBAL
                         USubGridOut, VSubGridOut
     ! velocity fluctuation
     REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UTilde, VTilde
-    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UcTilde,VcTilde
+    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: UcTilde,VcTilde 
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: UTildeOut, VTildeOut
     
     ! momentum exchange
+    REAL(SP), DIMENSION(:,:,:,:),ALLOCATABLE :: HUUTilde, HUVTilde, HVVTilde
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: MomEXX, MomEXY, MomEYY
-    
+   
     ! momentum balance terms
     REAL(SP), DIMENSION(:,:),ALLOCATABLE :: ADVECx, ADVECy, DIFFUx, DIFFUy, MEx, MEy, &
                                             PGx, PGy, LACx, LACy, BSx, BSy

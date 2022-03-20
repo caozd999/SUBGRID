@@ -45,7 +45,10 @@ SUBROUTINE INITIALIZATION
       IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
         ALLOCATE(MomEXX(Mloc1,Nloc),&
                  MomEXY(Mloc1,Nloc1),&
-                 MomEYY(Mloc,Nloc1) )
+                 MomEYY(Mloc,Nloc1), &
+                 HUUTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),   &
+                 HUVTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio),   &
+                 HVVTilde(Mloc,Nloc,SubMainGridRatio,SubMainGridRatio) )
       ENDIF
 
       IF(MANNING_TYPE=='SUBGRID')THEN

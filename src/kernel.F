@@ -836,20 +836,13 @@ SUBROUTINE CALCULATE_H_PQ_UV
   ENDDO
   ENDDO
 
-! apply froude cap in directions
-! moved to the loop above - Zhendong
-   DO J=Jbeg,Jend
-   DO I=Ibeg,Iend1
-   ENDDO
-   ENDDO
-
-   DO J=Jbeg,Jend1
-   DO I=Ibeg,Iend
-   ENDDO
-   ENDDO
-
-
 # if defined (PARALLEL)
+  IF(OUT_MOMBALANCE) THEN
+    CALL PHI_EXCH_2(LACx)
+    CALL PHI_EXCH_2(PGx)
+    CALL PHI_EXCH_3(LACy)
+    CALL PHI_EXCH_3(PGy)
+  ENDIF
   CALL PHI_EXCH_2(P)
   CALL PHI_EXCH_2(U)
   CALL PHI_EXCH_3(Q)
@@ -890,9 +883,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=1,Nghost
    MASKu(I,J)=MASKu(Ibeg,J)
    P(I,J)=P(Ibeg,J)
-!   U(I,J)=U(Ibeg,J)
+   U(I,J)=U(Ibeg,J)
    H_u(I,J)=H_u(Ibeg,J)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Ibeg,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Ibeg,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Ibeg,J)
   ENDDO
   ENDDO
 
@@ -900,9 +894,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=1,Nghost
    MASKv(I,J)=MASKv(Ibeg,J)
    Q(I,J)=Q(Ibeg,J)
-!   V(I,J)=V(Ibeg,J)
+   V(I,J)=V(Ibeg,J)
    H_v(I,J)=H_v(Ibeg,J)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Ibeg,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Ibeg,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Ibeg,J)
   ENDDO
   ENDDO
 
@@ -920,9 +915,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=Iend1+1,Mloc1
    MASKu(I,J)=MASKu(Iend1,J)
    P(I,J)=P(Iend1,J)
-!   U(I,J)=U(Iend1,J)
+   U(I,J)=U(Iend1,J)
    H_u(I,J)=H_u(Iend1,J)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Iend1,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Iend1,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Iend1,J)
   ENDDO
   ENDDO
 
@@ -930,9 +926,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=Iend1,Mloc
    MASKv(I,J)=MASKv(Iend,J)
    Q(I,J)=Q(Iend,J)
- !  V(I,J)=V(Iend,J)
+   V(I,J)=V(Iend,J)
    H_v(I,J)=H_v(Iend,J)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Iend,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Iend,J)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Iend,J)
   ENDDO
   ENDDO
 
@@ -949,9 +946,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=1,Mloc
    MASKv(I,J)=MASKv(I,Jbeg)
    Q(I,J)=Q(I,Jbeg)
- !  V(I,J)=V(I,Jbeg)
+   V(I,J)=V(I,Jbeg)
    H_v(I,J)=H_v(I,Jbeg)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jbeg)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jbeg)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jbeg)
   ENDDO
   ENDDO
 
@@ -960,9 +958,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=Ibeg,Iend1
    MASKu(I,J)=MASKu(I,Jbeg)
    P(I,J)=P(I,Jbeg)
-!   U(I,J)=U(I,Jbeg)
+   U(I,J)=U(I,Jbeg)
    H_u(I,J)=H_u(I,Jbeg)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jbeg)
+ !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jbeg)
+ !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jbeg)
   ENDDO
   ENDDO
 
@@ -979,9 +978,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=1,Mloc
    MASKv(I,J)=MASKv(I,Jend1)
    Q(I,J)=Q(I,Jend1)
-!   V(I,J)=V(I,Jend1)
+   V(I,J)=V(I,Jend1)
    H_v(I,J)=H_v(I,Jend1)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jend1)
+ !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jend1)
+ !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jend1)
   ENDDO
   ENDDO
 
@@ -990,9 +990,10 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
   DO I=Ibeg,Iend1
    MASKu(I,J)=MASKu(I,Jend)
    P(I,J)=P(I,Jend)
-!   U(I,J)=U(I,Jend)
+   U(I,J)=U(I,Jend)
    H_u(I,J)=H_u(I,Jend)
-   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jend)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jend)
+!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jend)
   ENDDO
   ENDDO
 
@@ -1042,27 +1043,92 @@ SUBROUTINE CALCULATE_ABC
 
 ! compute MomEXX, MomEXY, and MomEYY
   IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
-    DO J=Jbeg,Jend1
-    DO I=Ibeg,Iend1
-      TmpMomEXX = ZERO
-      TmpMomEXY = ZERO
-      TmpMomEYY = ZERO
+    HgtSubGrid = EtaSubGrid + DepSubGrid
+    ! compute uuh at each pixel
+    DO J=Jbeg,Jend
+    DO I=Ibeg,Iend
       DO II=1,SubMainGridRatio
       DO JJ=1,SubMainGridRatio
-        TmpMomEXX = TmpMomEXX+UTilde(I,J,II,JJ)*UTilde(I,J,II,JJ) &
-                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), MinDepth)
-        TmpMomEXY = TmpMomEXY+UTilde(I,J,II,JJ)*VTilde(I,J,II,JJ) &
-                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), MinDepth)
-        TmpMomEYY = TmpMomEYY+VTilde(I,J,II,JJ)*VTilde(I,J,II,JJ) &
-                               * MAX(EtaSubGrid(I,J,II,JJ)+DepSubGrid(I,J,II,JJ), MinDepth)
+        HUUTilde(I,J,II,JJ)=UcTilde(I,J,II,JJ)*UcTilde(I,J,II,JJ) &
+                               * MAX(HgtSubGrid(I,J,II,JJ), MinDepth)
+        HUVTilde(I,J,II,JJ)=UcTilde(I,J,II,JJ)*VcTilde(I,J,II,JJ) &
+                               * MAX(HgtSubGrid(I,J,II,JJ), MinDepth)
+        HVVTilde(I,J,II,JJ)=VcTilde(I,J,II,JJ)*VcTilde(I,J,II,JJ) &
+                               * MAX(HgtSubGrid(I,J,II,JJ), MinDepth)
       ENDDO
       ENDDO   
-      MomEXX(I,J) = TmpMomEXX/REAL(NumPixel)*MASKu(I,J)
-      MomEXY(I,J) = TmpMomEXY/REAL(NumPixel)*MASKu(I,J)*MASKv(I,J)
-      MomEYY(I,J) = TmpMomEYY/REAL(NumPixel)*MASKv(I,J)
     ENDDO
     ENDDO
-  ENDIF
+
+# if defined (PARALLEL)
+    CALL PHI_EXCH_SUBGRID(HUUTilde)
+    CALL PHI_EXCH_SUBGRID(HUVTilde)
+    CALL PHI_EXCH_SUBGRID(HVVTilde)
+# endif
+    
+    ! compute MomEXX
+    DO J=Jbeg,Jend
+    DO I=Ibeg,Iend1
+      TmpMomEXX = ZERO
+      DO JJ=1,SubMainGridRatio
+        DO II=1,HalfRatio
+          TmpMomEXX = TmpMomEXX + HUUTilde(I-1,J,II+HalfRatio,JJ)
+        ENDDO
+        DO II=HalfRatio+1,SubMainGridRatio
+          TmpMomEXX = TmpMomEXX + HUUTilde(I,J,II-HalfRatio,JJ)
+        ENDDO
+      ENDDO
+      MomEXX(I,J) = TmpMomEXX/REAL(NumPixel)*Masku(I,J)
+    ENDDO
+    ENDDO 
+ 
+    ! compute MomEYY
+    DO I=Ibeg,Iend
+    DO J=Jbeg,Jend1
+      TmpMomEYY = ZERO
+      DO II=1,SubMainGridRatio
+        DO JJ=1,HalfRatio
+          TmpMomEYY = TmpMomEYY + HVVTilde(I,J-1,II,JJ+HalfRatio)
+        ENDDO
+        DO JJ=HalfRatio+1,SubMainGridRatio
+          TmpMomEYY = TmpMomEYY + HVVTilde(I,J,II,JJ-HalfRatio)
+        ENDDO
+      ENDDO
+      MomEYY(I,J) = TmpMomEYY/REAL(NumPixel)*Maskv(I,J)
+    ENDDO
+    ENDDO
+
+    ! compute MomEXY
+    DO I=Ibeg, Iend1
+    DO J=Jbeg, Jend1
+      TmpMomEXY = ZERO
+      DO II=1,HalfRatio
+       DO JJ=1,HalfRatio
+         TmpMomEXY = TmpMomEXY + HUVTilde(I-1,J-1,II+HalfRatio,JJ+HalfRatio)
+       ENDDO
+       DO JJ=HalfRatio+1,SubMainGridRatio
+         TmpMomEXY = TmpMomEXY + HUVTilde(I-1,J,II+HalfRatio,JJ-HalfRatio)
+       ENDDO
+      ENDDO
+      DO II=HalfRatio+1,SubMainGridRatio
+        DO JJ=1,HalfRatio
+         TmpMomEXY = TmpMomEXY + HUVTilde(I,J-1,II-HalfRatio,JJ+HalfRatio)
+        ENDDO
+        DO JJ=HalfRatio+1,SubMainGridRatio
+         TmpMomEXY = TmpMomEXY + HUVTilde(I,J,II-HalfRatio,JJ-HalfRatio)
+        ENDDO
+      ENDDO
+      MomEXY(I,J) = TmpMomEXY/REAL(NumPixel)*Masku(I,J-1)*Masku(I,J)*Maskv(I-1,J)*Maskv(I,J)
+    ENDDO
+    ENDDO
+    
+
+# if defined (PARALLEL)
+    CALL PHI_EXCH_2(MomEXX)
+    CALL PHI_EXCH_3(MomEYY)
+    CALL PHI_EXCH_4(MomEXY)
+# endif
+  ENDIF !IF(CONSTRUCT_MOMENTUM_EXCHANGE)
 
 !  A_u
   DO J=Jbeg,Jend
@@ -1167,7 +1233,7 @@ SUBROUTINE CALCULATE_ABC
                - Nonlinear*(PQ(I,J+1)-PQ(I,J))/DY &
                + NU*(Rxx + Rxy) &
                + P(I,J)/DT &
-               - Nonlinear*MomEXX_x &
+               - Nonlinear*MomEXX_x  &
                - Nonlinear*(MomEXY(I,J+1)-MomEXY(I,J))/DY )
     ENDIF
     B(I,J)=B(I,J)*MASKu(I,J)
@@ -1179,11 +1245,20 @@ SUBROUTINE CALCULATE_ABC
      DIFFUx(I,J) = NU*(Rxx + Rxy)
      IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
        MEx(I,J) = Nonlinear*MomEXX_x + Nonlinear*(MomEXY(I,J+1)-MomEXY(I,J))/DY
-     ENDIF
+     ENDIF     
    ENDIF
 
   ENDDO
   ENDDO
+
+# if defined (PARALLEL)
+  IF(OUT_MOMBALANCE)THEN  
+    CALL PHI_EXCH_2(ADVECx)
+    CALL PHI_EXCH_2(DIFFUx)
+    CALL PHI_EXCH_2(BSx)
+    IF(CONSTRUCT_MOMENTUM_EXCHANGE) CALL PHI_EXCH_2(MEx)
+  ENDIF
+# endif
 
 ! A_v
   DO J=Jbeg,Jend1
@@ -1241,7 +1316,7 @@ SUBROUTINE CALCULATE_ABC
     TotResistFY(I,J)=rho_w*FrcV*V(I,J)
    ENDIF
    IF(OUT_MOMBALANCE) BSy(I,J) = FrcV*V(I,J)
-
+   
    ! momentum exchange terms
    IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
      IF(UPWINDING)THEN ! upwind
@@ -1305,6 +1380,15 @@ SUBROUTINE CALCULATE_ABC
 
   ENDDO
   ENDDO
+
+# if defined (PARALLEL)
+  IF(OUT_MOMBALANCE)THEN
+    CALL PHI_EXCH_3(ADVECy)
+    CALL PHI_EXCH_3(DIFFUy)
+    CALL PHI_EXCH_3(BSy)
+    IF(CONSTRUCT_MOMENTUM_EXCHANGE) CALL PHI_EXCH_3(MEy)
+  ENDIF
+# endif
 
 # if defined(DEBUG)
 # if defined (PARALLEL)

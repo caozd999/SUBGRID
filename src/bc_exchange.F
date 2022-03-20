@@ -355,6 +355,125 @@ END SUBROUTINE phi_exch_3
 
 
 # if defined (PARALLEL)
+SUBROUTINE phi_exch_4 (PHI)
+  USE PARAM
+  USE GLOBAL
+  IMPLICIT NONE
+  REAL(SP),INTENT(INOUT) :: PHI(Mloc1,Nloc1)
+
+  INTEGER,DIMENSION(MPI_STATUS_SIZE,4) :: status
+  INTEGER,DIMENSION(4) :: req
+  INTEGER :: nreq,len
+  REAL(SP),DIMENSION(Mloc1,Nghost) :: rNmsg, sNmsg,rSmsg,sSmsg
+  REAL(SP),DIMENSION(Nloc1,Nghost) :: rWmsg, sWmsg,rEmsg,sEmsg
+
+! for east-west
+
+  len = Nloc1 * Nghost
+
+  nreq = 0
+  if ( n_west .ne. MPI_PROC_NULL ) then
+    nreq = nreq + 1
+    call MPI_IRECV( rWmsg, len, MPI_SP, &
+      n_west, 0, comm2d, req(nreq), ier )
+    do j = 1, Nloc1
+    do i = 1, Nghost
+     sWmsg(j,i) = PHI(Ibeg+i-1,j)
+    enddo
+    enddo
+    nreq = nreq +1
+    call MPI_ISEND( sWmsg, len, MPI_SP, &
+      n_west, 1, comm2d, req(nreq), ier )
+  endif
+
+  if ( n_east .ne. MPI_PROC_NULL ) then
+    nreq = nreq + 1
+    call MPI_IRECV( rEmsg, len, MPI_SP, &
+      n_east, 1, comm2d, req(nreq), ier )
+    do j = 1, Nloc1
+    do i = 1, Nghost
+     sEmsg(j,i) = PHI(Iend-i+1,j)
+    enddo
+    enddo
+    nreq = nreq +1
+    call MPI_ISEND( sEmsg, len, MPI_SP, &
+      n_east, 0, comm2d, req(nreq), ier )
+  endif
+
+  call MPI_WAITALL( nreq, req, status, ier )
+
+  if ( n_west .ne. MPI_PROC_NULL ) then
+    do j = 1, Nloc1
+    do i = 1, Nghost
+     PHI(Ibeg-i,j) = rWmsg(j,i)
+    enddo
+    enddo
+  endif
+
+  if ( n_east .ne. MPI_PROC_NULL ) then
+    do j = 1, Nloc1
+    do i = 1, Nghost
+     PHI(Iend+i,j) = rEmsg(j,i)
+    enddo
+    enddo
+  endif
+
+! for nrth-suth
+
+  len = Mloc1 * Nghost
+
+  nreq = 0
+  if ( n_suth .ne. MPI_PROC_NULL ) then
+    nreq = nreq + 1
+    call MPI_IRECV( rSmsg, len, MPI_SP, &
+      n_suth, 0, comm2d, req(nreq), ier )
+    do i = 1, Mloc1
+    do j = 1, Nghost
+     sSmsg(i,j) = PHI(i,Jbeg+j-1)
+    enddo
+    enddo
+    nreq = nreq +1
+    call MPI_ISEND( sSmsg, len, MPI_SP, &
+      n_suth, 1, comm2d, req(nreq), ier )
+  endif
+
+  if ( n_nrth .ne. MPI_PROC_NULL ) then
+    nreq = nreq + 1
+    call MPI_IRECV( rNmsg, len, MPI_SP, &
+      n_nrth, 1, comm2d, req(nreq), ier )
+    do i = 1, Mloc1
+    do j = 1, Nghost
+     sNmsg(i,j) = PHI(i,Jend-j+1)
+    enddo
+    enddo
+    nreq = nreq + 1
+    call MPI_ISEND( sNmsg, len, MPI_SP, &
+      n_nrth, 0, comm2d, req(nreq), ier )
+  endif
+
+  call MPI_WAITALL( nreq, req, status, ier )
+
+  if ( n_suth .ne. MPI_PROC_NULL ) then
+    do i = 1, Mloc1
+    do j = 1, Nghost
+     PHI(i,Jbeg-j) = rSmsg(i,j)
+    enddo
+    enddo
+  endif
+
+  if ( n_nrth .ne. MPI_PROC_NULL ) then
+    do i = 1, Mloc1
+    do j = 1, Nghost
+     PHI(i,Jend+j) = rNmsg(i,j)
+    enddo
+    enddo
+  endif
+
+END SUBROUTINE phi_exch_4
+# endif
+
+
+# if defined (PARALLEL)
 SUBROUTINE PHI_EXCH_SUBGRID (PHI)
   USE PARAM
   USE GLOBAL

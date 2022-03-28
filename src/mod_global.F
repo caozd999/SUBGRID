@@ -47,11 +47,12 @@ MODULE GLOBAL
     INTEGER :: Nonlinear = 0
     REAL(SP) :: MinDepth=0.001_SP
     REAL(SP) :: MinDepFric=0.001_SP
+    REAL(SP) :: MinWetFrac=0.00_SP
     REAL(SP) :: CFL=0.15_SP
     REAL(SP) :: FroudeCap=10.0_SP
     REAL(SP) :: SWE_ETA_DEP=0.7_SP
     REAL(SP) :: NU=0.02_SP
-                         REAL(SP) :: MaxDepth
+    REAL(SP) :: MaxDepth
 
 ! some global variables
 ! Mloc1=Mloc+1, Nloc1=Nloc+1

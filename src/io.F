@@ -767,16 +767,23 @@ SUBROUTINE READ_INPUT
         MinDepFric = MinDepth
       ENDIF
 
+      CALL GET_Float_VAL(MinWetFrac,FILE_NAME,'MinWetFrac',line,ierr)
+      IF(ierr==1)THEN
+        MinWetFrac = ZERO
+      ENDIF
+
 # if defined (PARALLEL)
       if (myid.eq.0) WRITE(3,'(A5,F6.4)')'CFL=', CFL
       if (myid.eq.0) WRITE(3,'(A11,F6.4)')'FroudeCap=', FroudeCap
       if (myid.eq.0) WRITE(3,'(A10,F6.4)')'MinDepth=', MinDepth
       if (myid.eq.0) WRITE(3,'(A12,F6.4)')'MinDepFric=', MinDepFric
+      if (myid.eq.0) WRITE(3,'(A12,F6.4)')'MinWetFrac=', MinWetFrac
 # else
       WRITE(3,'(A5,F6.4)')'CFL=', CFL
       WRITE(3,'(A11,F6.4)')'FroudeCap=', FroudeCap
       WRITE(3,'(A10,F6.4)')'MinDepth=', MinDepth
       WRITE(3,'(A12,F6.4)')'MinDepFric=', MinDepFric
+      WRITE(3,'(A12,F6.4)')'MinWetFrac=', MinWetFrac
 # endif
 
 ! subgrid

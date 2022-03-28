@@ -885,8 +885,6 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(Ibeg,J)
    U(I,J)=U(Ibeg,J)
    H_u(I,J)=H_u(Ibeg,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Ibeg,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Ibeg,J)
   ENDDO
   ENDDO
 
@@ -896,8 +894,16 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(Ibeg,J)
    V(I,J)=V(Ibeg,J)
    H_v(I,J)=H_v(Ibeg,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Ibeg,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Ibeg,J)
+  ENDDO
+  ENDDO
+  
+  DO J=1,Nloc
+  DO I=1,Nghost
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+     HUUTilde(I,J,:,:)=HUUTilde(Ibeg,J,:,:)
+     HUVTilde(I,J,:,:)=HUVTilde(Ibeg,J,:,:)
+     HVVTilde(I,J,:,:)=HVVTilde(Ibeg,J,:,:)
+   ENDIF
   ENDDO
   ENDDO
 
@@ -917,8 +923,6 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(Iend1,J)
    U(I,J)=U(Iend1,J)
    H_u(I,J)=H_u(Iend1,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(Iend1,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Iend1,J)
   ENDDO
   ENDDO
 
@@ -928,8 +932,16 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(Iend,J)
    V(I,J)=V(Iend,J)
    H_v(I,J)=H_v(Iend,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(Iend,J)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(Iend,J)
+  ENDDO
+  ENDDO
+  
+  DO J=1,Nloc
+  DO I=Iend1,Mloc
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+     HUUTilde(I,J,:,:)=HUUTilde(Iend,J,:,:)
+     HUVTilde(I,J,:,:)=HUVTilde(Iend,J,:,:)
+     HVVTilde(I,J,:,:)=HVVTilde(Iend,J,:,:)
+   ENDIF
   ENDDO
   ENDDO
 
@@ -948,8 +960,6 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(I,Jbeg)
    V(I,J)=V(I,Jbeg)
    H_v(I,J)=H_v(I,Jbeg)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jbeg)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jbeg)
   ENDDO
   ENDDO
 
@@ -960,8 +970,16 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(I,Jbeg)
    U(I,J)=U(I,Jbeg)
    H_u(I,J)=H_u(I,Jbeg)
- !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jbeg)
- !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jbeg)
+  ENDDO
+  ENDDO
+
+  DO J=1,Nghost
+  DO I=1,Mloc
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+     HUUTilde(I,J,:,:)=HUUTilde(I,Jbeg,:,:)
+     HUVTilde(I,J,:,:)=HUVTilde(I,Jbeg,:,:)
+     HVVTilde(I,J,:,:)=HVVTilde(I,Jbeg,:,:)
+   ENDIF
   ENDDO
   ENDDO
 
@@ -980,8 +998,6 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    Q(I,J)=Q(I,Jend1)
    V(I,J)=V(I,Jend1)
    H_v(I,J)=H_v(I,Jend1)
- !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEYY(I,J)=MomEYY(I,Jend1)
- !  IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jend1)
   ENDDO
   ENDDO
 
@@ -992,8 +1008,16 @@ SUBROUTINE FILLIN_BOUNDARY_GHOST
    P(I,J)=P(I,Jend)
    U(I,J)=U(I,Jend)
    H_u(I,J)=H_u(I,Jend)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXX(I,J)=MomEXX(I,Jend)
-!   IF(CONSTRUCT_MOMENTUM_EXCHANGE) MomEXY(I,J)=MomEXY(I,Jend)
+  ENDDO
+  ENDDO
+
+  DO J=Jend1,Nloc
+  DO I=1,Mloc
+   IF(CONSTRUCT_MOMENTUM_EXCHANGE)THEN
+     HUUTilde(I,J,:,:)=HUUTilde(I,Jend,:,:)
+     HUVTilde(I,J,:,:)=HUVTilde(I,Jend,:,:)
+     HVVTilde(I,J,:,:)=HVVTilde(I,Jend,:,:)
+   ENDIF
   ENDDO
   ENDDO
 
@@ -1053,14 +1077,16 @@ SUBROUTINE CALCULATE_ABC
     ! compute uuh at each pixel
     DO J=Jbeg,Jend
     DO I=Ibeg,Iend
+!    DO J=1,Nloc
+!    DO I=1,Mloc
       DO II=1,SubMainGridRatio
       DO JJ=1,SubMainGridRatio
         HUUTilde(I,J,II,JJ)=UcTilde(I,J,II,JJ)*UcTilde(I,J,II,JJ) &
-                               * MAX(HgtSubGrid(I,J,II,JJ), MinDepth)
+                               * MAX(HgtSubGrid(I,J,II,JJ), ZERO)
         HUVTilde(I,J,II,JJ)=UcTilde(I,J,II,JJ)*VcTilde(I,J,II,JJ) &
-                               * MAX(HgtSubGrid(I,J,II,JJ), MinDepth)
+                               * MAX(HgtSubGrid(I,J,II,JJ), ZERO)
         HVVTilde(I,J,II,JJ)=VcTilde(I,J,II,JJ)*VcTilde(I,J,II,JJ) &
-                               * MAX(HgtSubGrid(I,J,II,JJ), MinDepth)
+                               * MAX(HgtSubGrid(I,J,II,JJ), ZERO)
       ENDDO
       ENDDO   
     ENDDO
@@ -1738,12 +1764,6 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
      ENDIF
     ENDDO
     ENDDO
-! compute utilde
-    IF(TmpWetFrac>ZERO)THEN
-      UTilde(I,J,:,:) = USubGrid(I,J,:,:) - U(I,J)/TmpWetFrac
-    ELSE
-      UTilde(I,J,:,:) = ZERO
-    ENDIF
   ELSEIF(UorV==2)THEN
     DO JJ=1,SubMainGridRatio
     DO II=1,SubMainGridRatio
@@ -1755,12 +1775,6 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
      ENDIF
     ENDDO
     ENDDO
-! compute vtilde
-    IF(TmpWetFrac>ZERO)THEN
-      VTilde(I,J,:,:) = VSubGrid(I,J,:,:) - V(I,J)/TmpWetFrac
-    ELSE
-      VTilde(I,J,:,:) = ZERO
-    ENDIF
   ENDIF ! UorV
   
    ! adjust subgrid u to make mass conserve
@@ -1797,12 +1811,6 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
        ENDDO ! end JJ loop
       ENDIF  ! end if tmpflux /= 0
      ENDDO   ! end II loop      
-! update utilde
-     IF(TmpWetFrac>ZERO)THEN
-       UTilde(I,J,:,:) = USubGrid(I,J,:,:) - U(I,J)/TmpWetFrac
-     ELSE
-       UTilde(I,J,:,:) = ZERO
-     ENDIF
    ELSEIF(UorV==2)THEN
      DO JJ = 1,SubMainGridRatio
       ! total flux through U coarse cell face
@@ -1835,14 +1843,23 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
        ENDDO ! end II loop
       ENDIF  ! end TmpFlux /=0
      ENDDO   ! end JJ loop
-! update vtilde
-     IF(TmpWetFrac>ZERO)THEN
-       VTilde(I,J,:,:) = VSubGrid(I,J,:,:) - V(I,J)/TmpWetFrac
-     ELSE
-       VTilde(I,J,:,:) = ZERO
-     ENDIF
     ENDIF    ! end UorV
   ENDIF     ! end correction uv
+
+!compute utilde, vtilde
+  IF(UorV==1)THEN
+    IF(TmpWetFrac>MinWetFrac)THEN
+       UTilde(I,J,:,:) = USubGrid(I,J,:,:) - U(I,J)/TmpWetFrac
+    ELSE
+      UTilde(I,J,:,:) = ZERO
+    ENDIF
+  ELSE
+    IF(TmpWetFrac>MinWetFrac)THEN
+      VTilde(I,J,:,:) = VSubGrid(I,J,:,:) - V(I,J)/TmpWetFrac
+    ELSE
+      VTilde(I,J,:,:) = ZERO
+    ENDIF
+  ENDIF
    
 END SUBROUTINE CALCULATE_SUBGRID_UV
 

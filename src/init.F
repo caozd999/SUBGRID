@@ -547,7 +547,9 @@ SUBROUTINE INDEX
     dims(2) = py
     periods(1) = .false.
     periods(2) = .false.
-    IF(PERIODIC) periods(2) = .true.
+    IF(PERIODIC_X) periods(1) = .true.
+    IF(PERIODIC_Y) periods(2) = .true.
+     
     coords(1) = 0
     coords(2) = 0
 
@@ -560,8 +562,6 @@ SUBROUTINE INDEX
 
     call MPI_Cart_shift( comm2d, 0, 1, n_west, n_east, ier )
     call MPI_Cart_shift( comm2d, 1, 1, n_suth, n_nrth, ier )
-
-
 # else
   px=1
   py=1

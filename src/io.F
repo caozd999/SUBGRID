@@ -372,7 +372,6 @@ SUBROUTINE READ_INPUT
 
      ENDIF ! end tide clamped 
 
-
 # if defined (PARALLEL)
       if (myid.eq.0) WRITE(3,'(A12,A20)')'RIVER_FILE:', RIVER_FILE
       if (myid.eq.0) WRITE(3,'(A11,A20)')'TIDE_FILE:',  TIDE_FILE
@@ -381,6 +380,24 @@ SUBROUTINE READ_INPUT
       WRITE(3,'(A11,A20)')'TIDE_FILE:',  TIDE_FILE
 # endif
 
+! periodic boundary condition
+      CALL GET_LOGICAL_VAL(PERIODIC_X,FILE_NAME,'PERIODIC_X',line,ierr)
+      IF(ierr==1)THEN
+        PERIODIC_X = .FALSE.
+      ENDIF
+
+      CALL GET_LOGICAL_VAL(PERIODIC_Y,FILE_NAME,'PERIODIC_Y',line,ierr)
+      IF(ierr==1)THEN
+        PERIODIC_Y = .FALSE.
+      ENDIF
+
+# if defined (PARALLEL)
+      if (myid.eq.0) WRITE(3,'(A12,L2)')'PERIODIC_X=', PERIODIC_X
+      if (myid.eq.0) WRITE(3,'(A12,L2)')'PERIODIC_Y=',  PERIODIC_Y
+# else
+      WRITE(3,'(A12,L2)')'PERIODIC_X=', PERIODIC_X
+      WRITE(3,'(A12,L2)')'PERIODIC_Y=',  PERIODIC_Y
+# endif
 
 ! physics
       CALL GET_INTEGER_VAL(Nonlinear,FILE_NAME,'Nonlinear',line,ierr)

@@ -66,7 +66,6 @@ MODULE GLOBAL
     REAL(SP):: DX,DY,DX2,DY2,DXDY
     REAL(SP) :: dt_over_dx2,dt_over_dy2,dt_over_dx,dt_over_dy
 
-    LOGICAL :: PERIODIC=.FALSE.
     LOGICAL :: HOT_START=.FALSE.
     LOGICAL :: CONSTANT_DT
 
@@ -167,7 +166,9 @@ MODULE GLOBAL
     REAL(SP),DIMENSION(:,:),ALLOCATABLE :: TidePeriod, TideAmp, TidePha
     INTEGER, DIMENSION(:),  ALLOCATABLE :: I_bnd, J_bnd
 
-
+! periodic boundary conditions
+    LOGICAL :: PERIODIC_X = .FALSE.
+    LOGICAL :: PERIODIC_Y = .FALSE.
 ! sediment
 # if defined(SEDIMENT)
     LOGICAL :: UPDATE_BED   = .FALSE.

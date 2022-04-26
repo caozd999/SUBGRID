@@ -236,6 +236,21 @@ SUBROUTINE READ_INPUT
 # endif
        ENDIF
 
+      CALL GET_Float_VAL(PLOT_TIME,FILE_NAME,'PLOT_TIME',line,ierr)
+
+      IF(ierr==1)THEN
+        PLOT_TIME = 0.0
+# if defined (PARALLEL)
+      if (myid.eq.0) THEN
+         WRITE(*,'(A40)')'PLOT_TIME Default:  0.0 s'
+         WRITE(3,'(A40)')'PLOT_TIME Default:  0.0 s'
+      endif
+# else
+         WRITE(*,'(A40)')'PLOT_TIME Default:  0.0 s'
+         WRITE(3,'(A40)')'PLOT_TIME Default:  0.0 s'
+# endif
+       ENDIF
+
       CALL GET_Float_VAL(PLOT_INTV_STATION,FILE_NAME,'PLOT_INTV_STATION',line,ierr)
 
       IF(ierr==1)THEN
@@ -275,12 +290,14 @@ SUBROUTINE READ_INPUT
       if (myid.eq.0) WRITE(3,'(A10,F12.4)')'DT_FIXED=', DT_FIXED
       if (myid.eq.0) WRITE(3,'(A12,F12.2)')'TOTAL_TIME=', TOTAL_TIME
       if (myid.eq.0) WRITE(3,'(A12,F12.2)')'PLOT_INTV= ', PLOT_INTV
+      if (myid.eq.0) WRITE(3,'(A12,F12.2)')'PLOT_TIME= ', PLOT_TIME
       if (myid.eq.0) WRITE(3,'(A13,F12.2)')'SCREEN_INTV=', SCREEN_INTV
 # else
       WRITE(3,'(A13,L2)')'CONSTANT_DT=', CONSTANT_DT
       WRITE(3,'(A10,F12.4)')'DT_FIXED=', DT_FIXED
       WRITE(3,'(A12,F12.2)')'TOTAL_TIME=', TOTAL_TIME
       WRITE(3,'(A12,F12.2)')'PLOT_INTV= ', PLOT_INTV
+      WRITE(3,'(A12,F12.2)')'PLOT_TIME= ', PLOT_TIME
       WRITE(3,'(A13,F12.2)')'SCREEN_INTV=', SCREEN_INTV
 # endif
 

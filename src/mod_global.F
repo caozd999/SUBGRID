@@ -70,7 +70,7 @@ MODULE GLOBAL
     LOGICAL :: CONSTANT_DT
 
     REAL(SP)::  DT_FIXED,DT,TIME,TOTAL_TIME,PLOT_INTV,PLOT_COUNT,&
-          SCREEN_INTV,SCREEN_COUNT
+          SCREEN_INTV,SCREEN_COUNT,PLOT_TIME
     REAL(SP):: HOTSTART_INTV,HOTSTART_COUNT
     INTEGER :: icount=0 ! for output file number
     INTEGER :: icount_stations=0 ! for output station

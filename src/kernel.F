@@ -308,7 +308,7 @@ ENDIF
    ENDIF
 
    ! output maps
-   IF(TIME-(ICOUNT+1)*PLOT_INTV>=0.0_SP)THEN
+   IF(TIME-(ICOUNT+1)*PLOT_INTV>=PLOT_TIME)THEN
     CALL PREVIEW
 # if defined (DEBUG)
 #    if defined (PARALLEL)

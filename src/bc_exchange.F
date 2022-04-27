@@ -378,7 +378,7 @@ SUBROUTINE phi_exch_4 (PHI)
       n_west, 0, comm2d, req(nreq), ier )
     do j = 1, Nloc1
     do i = 1, Nghost
-     sWmsg(j,i) = PHI(Ibeg+i-1,j)
+     sWmsg(j,i) = PHI(Ibeg+i,j)
     enddo
     enddo
     nreq = nreq +1
@@ -392,7 +392,7 @@ SUBROUTINE phi_exch_4 (PHI)
       n_east, 1, comm2d, req(nreq), ier )
     do j = 1, Nloc1
     do i = 1, Nghost
-     sEmsg(j,i) = PHI(Iend-i+1,j)
+     sEmsg(j,i) = PHI(Iend1-i,j)
     enddo
     enddo
     nreq = nreq +1
@@ -413,7 +413,7 @@ SUBROUTINE phi_exch_4 (PHI)
   if ( n_east .ne. MPI_PROC_NULL ) then
     do j = 1, Nloc1
     do i = 1, Nghost
-     PHI(Iend+i,j) = rEmsg(j,i)
+     PHI(Iend1+i,j) = rEmsg(j,i)
     enddo
     enddo
   endif
@@ -429,7 +429,7 @@ SUBROUTINE phi_exch_4 (PHI)
       n_suth, 0, comm2d, req(nreq), ier )
     do i = 1, Mloc1
     do j = 1, Nghost
-     sSmsg(i,j) = PHI(i,Jbeg+j-1)
+     sSmsg(i,j) = PHI(i,Jbeg+j)
     enddo
     enddo
     nreq = nreq +1
@@ -443,7 +443,7 @@ SUBROUTINE phi_exch_4 (PHI)
       n_nrth, 1, comm2d, req(nreq), ier )
     do i = 1, Mloc1
     do j = 1, Nghost
-     sNmsg(i,j) = PHI(i,Jend-j+1)
+     sNmsg(i,j) = PHI(i,Jend1-j)
     enddo
     enddo
     nreq = nreq + 1
@@ -464,7 +464,7 @@ SUBROUTINE phi_exch_4 (PHI)
   if ( n_nrth .ne. MPI_PROC_NULL ) then
     do i = 1, Mloc1
     do j = 1, Nghost
-     PHI(i,Jend+j) = rNmsg(i,j)
+     PHI(i,Jend1+j) = rNmsg(i,j)
     enddo
     enddo
   endif

@@ -1849,7 +1849,7 @@ SUBROUTINE CALCULATE_SUBGRID_UV(UorV)
 !compute utilde, vtilde
   IF(UorV==1)THEN
     IF(TmpWetFrac>MinWetFrac)THEN
-       UTilde(I,J,:,:) = USubGrid(I,J,:,:) - U(I,J)
+      UTilde(I,J,:,:) = USubGrid(I,J,:,:) - U(I,J)
     ELSE
       UTilde(I,J,:,:) = ZERO
     ENDIF
